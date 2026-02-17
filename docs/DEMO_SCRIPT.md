@@ -498,6 +498,62 @@ Command: `.cursor/commands/signal-to-pr.md`.
 
 ---
 
+## Hooks: automated quality gates
+
+Two hooks fire automatically during the demo — no user action needed:
+
+### Hook 1: Auto-run tests on agent stop (`stop`)
+
+When the agent finishes its work, the `stop` hook runs `npm test` automatically. If any tests fail, it returns a `followup_message` that auto-submits to the agent: "Tests failed. Fix the failing tests." The agent then self-heals — reads the failures, fixes the code, and the hook runs again on the next stop.
+
+**During the demo:** After the agent finishes building the export feature, tests run without you typing anything. 30/30 pass → the agent is done. If the agent had introduced a bug (say, forgot the 90-day range validation), the tests would catch it and the agent would auto-fix. Maximum 2 retry loops.
+
+**The talking point:** "I didn't run the tests — the hook did. And if they'd failed, the agent would have automatically tried to fix them. That's a self-healing quality gate: hooks enforce it, rules define it, tests verify it."
+
+### Hook 2: Security scan on route edits (`afterFileEdit`)
+
+Every time the agent writes or modifies a file in `src/api/routes/`, the security-scan hook fires and checks for:
+- User input in `Content-Disposition` headers without sanitization
+- Template literals using `req.body` directly in HTTP headers
+- Async handlers without try/catch (crash risk)
+- Raw error objects in responses (stack trace leakage)
+- Missing Zod/schema validation on `req.body`
+
+**During the demo:** When the agent creates `src/api/routes/export.ts`, the hook runs silently. If the agent had skipped input sanitization, the hook would flag it immediately — before the code even compiles.
+
+**The talking point:** "The security scan runs on every route edit, not just when someone remembers to run a linter. It's checking OWASP Top 10 patterns — path traversal in filenames, stack trace leakage, missing input validation. That's the 'increase code quality, safety, or consistency' the prompt asks about."
+
+### Configuration
+
+Hooks are defined in `.cursor/hooks.json` (project-level, committed to the repo):
+
+```json
+{
+  "version": 1,
+  "hooks": {
+    "stop": [{ "command": ".cursor/hooks/run-tests-on-stop.sh", "timeout": 60 }],
+    "afterFileEdit": [{ "command": ".cursor/hooks/security-scan-route.sh", "timeout": 10 }]
+  }
+}
+```
+
+Scripts live in `.cursor/hooks/` and are executable shell scripts. They receive JSON on stdin and return JSON on stdout. The `stop` hook's `followup_message` field is what enables the self-healing loop.
+
+### Why hooks matter for the evaluation
+
+Hooks are the **fourth Cursor extensibility primitive** alongside Rules, Commands, and MCPs:
+
+| Primitive | What it does | When it fires |
+|-----------|-------------|---------------|
+| **Rules** | Tell the agent *what* to enforce | When the agent reads relevant files |
+| **Commands** | Tell the agent *how* to run a workflow | When the user types a slash command |
+| **MCPs** | Give the agent *tools* to interact with external systems | When the agent needs data or actions |
+| **Hooks** | Enforce quality gates *automatically* | At specific points in the agent lifecycle |
+
+"Rules define the standard. Commands run the pipeline. MCPs connect the tools. Hooks enforce it all automatically — even if the developer forgets to ask."
+
+---
+
 ## Quick reference: MCP tools
 
 | Server          | Tools                                                                 |

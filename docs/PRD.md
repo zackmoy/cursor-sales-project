@@ -89,6 +89,13 @@ Agent creates a Linear ticket (or updates an existing one), then opens a PR with
 | `/signal-to-pr` | Full pipeline: signal → spec → Linear → plan → build → PR (with optional yolo mode) |
 | `/review-pr` | Architecture + security + quality review on current diff (4 gates + OWASP checks) |
 
+### Hooks (2 hooks in `.cursor/hooks.json`)
+
+| Hook | Trigger | What it does |
+|------|---------|-------------|
+| `run-tests-on-stop.sh` | `stop` (agent finishes) | Runs `npm test`; if tests fail, auto-submits followup message so the agent self-heals (max 2 retries) |
+| `security-scan-route.sh` | `afterFileEdit` | Scans route files for OWASP risks: unsanitized headers, missing try/catch, raw error leakage, missing Zod validation |
+
 ### Starter Codebase
 
 | Component | Path | Description |
