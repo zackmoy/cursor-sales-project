@@ -1,0 +1,40 @@
+---
+description: Codebase architecture patterns for the Signal-to-Code demo app
+globs: ["**/src/**"]
+alwaysApply: true
+---
+
+# Architecture Standards (Demo App)
+
+## File Structure
+- Services: `src/services/`
+- API routes: `src/api/routes/`
+- React components: `src/components/`
+- Tests: `src/__tests__/` (mirrors source structure)
+- Specs: `specs/`
+
+## Stack
+- Frontend: Vite + React (TypeScript)
+- Backend: Express, TypeScript (run with tsx)
+- Validation: Zod for API request bodies
+
+## Conventions
+- TypeScript strict mode
+- camelCase for functions/variables
+- PascalCase for components/classes/types
+- kebab-case for filenames
+- All API endpoints validated with Zod schemas
+
+## Domain Language
+- "workspace" (NOT "organization" or "tenant")
+- "analytics" (NOT "metrics" or "stats")
+- "export" (NOT "download")
+- "member" (NOT "user" or "account")
+
+## Testing
+- Unit tests in `src/__tests__/` with vitest
+- Map tests to acceptance criteria in specs where applicable
+
+## PR / Spec Traceability
+- PR description must reference the spec file in `specs/`
+- Tag relevant AEs/SEs from the originating customer calls when known

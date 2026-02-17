@@ -23,3 +23,6 @@ out/
 .vscode/
 *.swp
 .DS_Store
+
+# Fun stuff just for Zack :)
+.interview-prep

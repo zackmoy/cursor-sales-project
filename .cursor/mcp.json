@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "gong-mock": {
+      "command": "node",
+      "args": ["./mcp-servers/gong-mock/index.js"]
+    },
+    "canny-mock": {
+      "command": "node",
+      "args": ["./mcp-servers/canny-mock/index.js"]
+    },
+    "zendesk-mock": {
+      "command": "node",
+      "args": ["./mcp-servers/zendesk-mock/index.js"]
+    },
+    "product-server-mock": {
+      "command": "node",
+      "args": ["./mcp-servers/product-mock/index.js"]
+    },
+    "linear": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]
+    }
+  }
+}

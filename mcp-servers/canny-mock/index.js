@@ -1,0 +1,100 @@
+#!/usr/bin/env node
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+
+const server = new McpServer({
+  name: "canny-mock",
+  version: "1.0.0",
+});
+
+const MOCK_REQUESTS = [
+  {
+    id: "req-csv-001",
+    title: "Bulk CSV export from analytics dashboard",
+    description: "Ability to select date range and metrics, then export all data as CSV for board reporting and external analysis. Many enterprise customers need this for quarterly reviews.",
+    voteCount: 47,
+    status: "Under Consideration",
+    createdAt: "2025-10-15",
+    tags: ["analytics", "export", "reporting"],
+    voterCompanies: ["Acme Corp", "Initech", "Stark Industries", "Beta Inc", "Wayne Enterprises"],
+    commentCount: 12,
+  },
+  {
+    id: "req-sso-002",
+    title: "Azure AD / SAML SSO support",
+    description: "Native SSO with Azure AD and SAML 2.0 for enterprise identity. Critical for regulated industries.",
+    voteCount: 23,
+    status: "Planned",
+    createdAt: "2025-09-01",
+    tags: ["sso", "security", "enterprise"],
+    voterCompanies: ["Globex Industries", "Umbrella Corp", "Cyberdyne"],
+    commentCount: 8,
+  },
+  {
+    id: "req-dash-003",
+    title: "Dashboard customization and saved views",
+    description: "Allow users to customize widget layout and save views per workspace.",
+    voteCount: 8,
+    status: "Under Consideration",
+    createdAt: "2025-11-20",
+    tags: ["analytics", "dashboard", "ux"],
+    voterCompanies: ["Acme Corp", "Initech"],
+    commentCount: 3,
+  },
+];
+
+server.tool(
+  "search_feature_requests",
+  "Search Canny feature requests by keywords or tags. Returns list of requests with vote counts and status.",
+  {
+    keywords: z.array(z.string()).optional().describe("Keywords to search in title/description"),
+    tags: z.array(z.string()).optional().describe("Filter by tags"),
+  },
+  async ({ keywords, tags }) => {
+    let results = [...MOCK_REQUESTS];
+    if (keywords?.length) {
+      const lower = keywords.map((k) => k.toLowerCase());
+      results = results.filter(
+        (r) =>
+          lower.some((k) => r.title.toLowerCase().includes(k)) ||
+          lower.some((k) => r.description.toLowerCase().includes(k))
+      );
+    }
+    if (tags?.length) {
+      const lower = tags.map((t) => t.toLowerCase());
+      results = results.filter((r) => r.tags.some((t) => lower.includes(t.toLowerCase())));
+    }
+    return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+  }
+);
+
+server.tool(
+  "get_request_details",
+  "Get full details for a specific feature request including description, votes, status, and voter companies.",
+  { requestId: z.string().describe("The Canny feature request ID") },
+  async ({ requestId }) => {
+    const req = MOCK_REQUESTS.find((r) => r.id === requestId);
+    if (!req) return { content: [{ type: "text", text: `Request ${requestId} not found` }] };
+    return { content: [{ type: "text", text: JSON.stringify(req, null, 2) }] };
+  }
+);
+
+server.tool(
+  "get_request_voters",
+  "Get companies (and optionally count) that voted for a feature request.",
+  { requestId: z.string().describe("The Canny feature request ID") },
+  async ({ requestId }) => {
+    const req = MOCK_REQUESTS.find((r) => r.id === requestId);
+    if (!req) return { content: [{ type: "text", text: `Request ${requestId} not found` }] };
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({ requestId, voteCount: req.voteCount, companies: req.voterCompanies }, null, 2),
+      }],
+    };
+  }
+);
+
+const transport = new StdioServerTransport();
+await server.connect(transport);

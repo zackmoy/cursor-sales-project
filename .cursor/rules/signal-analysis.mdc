@@ -1,0 +1,31 @@
+---
+description: Rules for ingesting and triangulating customer signal across Gong, Canny, and Zendesk
+globs: ["**/specs/**", "**/analysis/**"]
+alwaysApply: false
+---
+
+# Multi-Source Signal Analysis Rules
+
+## Source Processing
+- **Gong calls:** Identify each participant as CUSTOMER or PROSPECT. Extract exact quotes, pain points, competitive mentions, buying signals.
+- **Canny requests:** Note vote count, top voter companies, request age, current status.
+- **Zendesk tickets:** Identify implicit feature requests (workaround patterns), count tickets per theme, note requester companies.
+
+## Triangulation
+- Cross-reference by feature/theme across all three sources
+- Flag features that appear in ALL THREE sources as CRITICAL
+- Flag features in TWO sources as HIGH
+- Single-source signals are MEDIUM
+- Weight by: customer tier, deal size, vote count, ticket volume
+
+## Signal Strength Rating
+- 🔴 CRITICAL: Appears in 3 sources, or deal-blocking for >$100K prospect
+- 🟡 HIGH: Appears in 2 sources, or mentioned by multiple customers
+- 🟢 MEDIUM: Single source, single mention
+- ⚪ LOW: Nice-to-have, no urgency signals
+
+## Output Format
+1. Cross-source signal map (table showing presence across all channels)
+2. Per-feature deep dive (evidence from each source, exact quotes)
+3. Triangulation summary (why the combined signal is stronger than any single source)
+4. Customer quotes (exact words from transcripts, ticket text, Canny descriptions)

@@ -1,0 +1,30 @@
+---
+description: Template and rules for generating feature specifications with multi-source attribution
+globs: ["**/specs/**"]
+alwaysApply: false
+---
+
+# Feature Specification Rules
+
+Every spec MUST follow this template:
+
+## Required Sections
+1. **Origin (Multi-Source Attribution)** — Which Gong calls, Canny requests, and Zendesk tickets drove this (with signal strength: Critical/High/Medium/Low)
+2. **Problem Statement** — The customer's pain in plain English
+3. **Customer Quotes** — Exact words from transcripts, ticket text, or Canny descriptions
+4. **Requirements** — Numbered list of what must be built (must include both API/backend and UI/frontend when the feature is user-facing)
+5. **Acceptance Criteria** — Checkboxes that map 1:1 to tests
+6. **Technical Constraints** — Integration points (e.g. existing AnalyticsService, API routes), performance requirements
+7. **UI / Frontend** — If the feature is user-facing: which components or pages are affected or new (e.g. `src/components/`), what the user can do (e.g. "Export CSV" button), and **when controls are visible or enabled** (e.g. "Export CSV is always visible; user can export using current date range and metrics without running a query first" vs "Export CSV only appears after a successful query"). Use "N/A — API-only" only when the feature has no user-facing surface.
+8. **Stakeholder Routing** — Which AEs/SEs to notify on the PR (from participant metadata)
+9. **AI Attribution** — Which parts were AI-analyzed vs human-reviewed
+
+## Rules
+- Never generate a spec without tracing it to specific customer signal (calls, feature requests, and/or tickets)
+- Always include multi-source attribution and signal strength from triangulation
+- Always include the customer/prospect distinction
+- **Include UI in scope:** For user-facing features, requirements and acceptance criteria MUST cover the frontend (e.g. new or updated components in `src/components/`). Do not ship API-only when the customer need implies a UI (e.g. "export as CSV" implies a way in the app to trigger the export).
+- **Define UI visibility and enablement:** In the UI / Frontend section, explicitly state when each control is shown and when it is enabled (e.g. always visible vs only after another action, disabled until form valid). Implementation must follow the spec; if the spec is silent, ask for clarification rather than guessing.
+- If requirements conflict with our architecture, flag as NEEDS_PRODUCT_REVIEW
+- Acceptance criteria must be testable — no vague language like "should work well"
+- Technical constraints must reference our actual codebase (e.g. src/services/analytics-service.ts, src/api/routes/analytics.ts, src/components/ when applicable)
