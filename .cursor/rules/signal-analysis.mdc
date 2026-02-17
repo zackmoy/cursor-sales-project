@@ -24,8 +24,12 @@ alwaysApply: false
 - 🟢 MEDIUM: Single source, single mention
 - ⚪ LOW: Nice-to-have, no urgency signals
 
+## Already-Addressed Signals
+- Before picking the top feature, check `specs/` for existing spec files and the codebase (`src/`) for already-implemented features. If a feature already has a spec or is already shipped, mark it as DONE in the signal map and move to the next strongest signal.
+- Example: if `specs/csv-bulk-export.md` exists and `src/services/export-service.ts` exists, CSV export is shipped — pick the next priority.
+
 ## Output Format
-1. Cross-source signal map (table showing presence across all channels)
+1. Cross-source signal map (table showing presence across all channels, noting any DONE features)
 2. Per-feature deep dive (evidence from each source, exact quotes)
 3. Triangulation summary (why the combined signal is stronger than any single source)
 4. Customer quotes (exact words from transcripts, ticket text, Canny descriptions)

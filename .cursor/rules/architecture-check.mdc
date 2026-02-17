@@ -1,0 +1,66 @@
+---
+description: Architecture guardrails that flag features requiring design review before implementation
+globs: ["**/specs/**", "**/src/**"]
+alwaysApply: true
+---
+
+# Architecture Review Gates
+
+Before implementing a feature, check it against these gates. If ANY gate is triggered, add the corresponding flag to the spec and **stop before writing code** — present the flag(s) and the reason to the developer for review.
+
+## Gate 1: New Persistence Layer → `NEEDS_DESIGN_REVIEW`
+
+Flag if the feature requires:
+- Storing state that survives page reload or session end (e.g. saved views, user preferences, custom layouts)
+- A new database table, collection, or storage bucket
+- Client-side persistence beyond ephemeral component state (e.g. localStorage, IndexedDB)
+
+**Why:** Our current architecture is stateless per request. The analytics service queries data; the export service transforms and returns it. Adding persistence (even client-side) introduces state management, migration, and consistency concerns that need explicit design.
+
+**Current state:** No persistent user/workspace configuration exists in the codebase. `AnalyticsService` is query-only. Adding saved views, custom layouts, or user preferences would be the first persistent state — that's a deliberate architectural decision, not something to introduce implicitly.
+
+## Gate 2: New Auth / Access Control Pattern → `NEEDS_SECURITY_REVIEW`
+
+Flag if the feature requires:
+- User-specific data scoping (e.g. "only show MY saved views") when we currently scope by workspace only
+- New RBAC roles or permissions beyond what exists
+- Storing or transmitting user identity tokens in a new way
+
+**Why:** We scope data by `workspaceId` today. Per-user scoping requires identity propagation through the API layer — that's a security surface change.
+
+## Gate 3: Shared Component Interface Change → `NEEDS_BREAKING_CHANGE_REVIEW`
+
+Flag if the feature requires:
+- Changing the props/interface of a component used in multiple places
+- Changing an API route's request or response shape that existing consumers depend on
+- Removing or renaming a public export from a service module
+
+**Why:** Breaking changes to shared interfaces can cascade. These need a migration plan.
+
+## Gate 4: Input-Driven Output → `NEEDS_SECURITY_REVIEW`
+
+Flag if the feature:
+- Uses user-supplied values in filenames, HTTP headers, or file paths (e.g. `Content-Disposition: attachment; filename="${userInput}.csv"`)
+- Passes user input into shell commands, SQL queries, or template strings without sanitization
+- Returns user input in error messages without escaping (potential XSS in API consumers)
+- Generates downloadable files where the content or format is influenced by user input
+
+**Why:** User-controlled values in filenames enable path traversal (`../../etc/passwd`). User input in headers enables header injection. User input in error responses enables reflected XSS in downstream consumers. These are OWASP Top 10 risks.
+
+**What to check for export/download features:**
+- Filename must be sanitized: strip or reject characters outside `[a-zA-Z0-9._-]`
+- User-supplied date strings should be validated as ISO dates before use in filenames
+- Metric names should be checked against an allowlist before inclusion in CSV headers (prevents CSV injection via crafted metric names like `=CMD()`)
+- Response content-type must be explicit (`text/csv`) not inferred
+
+## How to Flag
+
+In the spec, add a section:
+
+```
+## Architecture Review
+- [ ] `NEEDS_DESIGN_REVIEW`: [reason — e.g. "Saved views require persisting user layout preferences. No persistence layer exists in current architecture."]
+- [ ] `NEEDS_SECURITY_REVIEW`: [reason — e.g. "Export filename uses user-supplied dates in Content-Disposition header. Must sanitize to prevent header injection."]
+```
+
+The agent MUST NOT proceed to implementation (Plan + Build) until the developer acknowledges the flag. Present the flag, explain the concern, and ask whether to (a) proceed with a proposed mitigation, (b) descope the feature to avoid the risk, or (c) defer to a security/architecture review.

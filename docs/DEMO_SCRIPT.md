@@ -10,6 +10,12 @@ Use this when demoing **pull signal → triangulate → spec → build code** in
 
 **Include all of the following in your demo.** The sections below are the script: problem, ROI framing, three benefits, design decisions, limitations, evaluation mapping, and pacing. Use them as your talking points; the working walkthrough (Steps 1–6) comes after.
 
+### Real-world software development workflow (addressing the prompt)
+
+The prompt asks for a prototype that "meaningfully improve[s] a real-world software development workflow." **Real-world development already includes feedback from customers and prospects:** support tickets (Zendesk), feature requests and votes (Canny), and sales/customer calls (Gong). Those signals exist in every enterprise; the gap is that they live in separate systems and rarely reach the developer as one coherent, attributable story. This prototype starts there: we show Cursor ingesting exactly those real-world signals, triangulating them, and turning them into a spec and code with full traceability. That *is* a real-world workflow—the one teams already have, improved by reducing handoff loss and context-switching.
+
+**Optional line for the intro:** "Real-world software development isn’t just writing code—it’s responding to customer feedback in Zendesk, feature votes in Canny, and what prospects say on Gong calls. Our prototype shows Cursor improving that workflow by pulling those signals into one place and turning them into a spec and code with full attribution."
+
 ### Problem we chose and why it matters (enterprise context)
 
 **Problem:** Enterprise teams lose customer signal at every handoff. A feature request appears as words on a Gong call, a vote on Canny, and patterns in Zendesk tickets — but those live in three different systems. By the time a developer sees a Jira ticket, the customer’s pain has been translated multiple times and the evidence is gone. Prioritization becomes guesswork; traceability from “what we shipped” back to “which customer and which deal” is rare.
@@ -30,9 +36,9 @@ Make this explicit when you walk through the spec and the build: point to the **
 
 | Benefit (from prompt) | How the prototype shows it |
 |----------------------|----------------------------|
-| **Improve developer velocity** | One flow replaces the chain (Gong → CRM → Jira → Sprint → Code → PR). Signal to spec in one command (`/signal-to-spec`); spec to Linear ticket to implementation in two more (`/spec-to-linear`, `/do-linear-ticket`). Same feature in one session instead of multiple handoffs. |
+| **Improve developer velocity** | One flow replaces the chain (Gong → CRM → Jira → Sprint → Code → PR). Signal to spec in one command (`/signal-to-spec`); spec to Linear ticket to implementation in two more (`/spec-to-linear`, `/do-linear-ticket`). PR review via `/review-pr`. Same feature from signal to reviewed PR in one session. |
 | **Reduce cognitive load** | Developer stays in Cursor. No switching to Gong, Canny, Zendesk, or Jira to gather context. The agent pulls from all three, triangulates, and produces a single spec. Plan-and-implement is one conversation with approval at the right step. |
-| **Increase code quality, safety, consistency** | Rules enforce architecture (services, routes, components, tests), spec template (origin, acceptance criteria, **test requirements**, UI visibility). Every feature must include tests that map to acceptance criteria; `npm test` before done. Zod on API; traceability from spec to PR. |
+| **Increase code quality, safety, consistency** | Rules enforce architecture (services, routes, components, tests), spec template (origin, acceptance criteria, **test requirements**, UI visibility). Every feature must include tests that map to acceptance criteria; `npm test` before done. Zod on API; traceability from spec to PR. **Architecture-check rule** (4 gates: persistence, auth, interface changes, input safety) catches issues before code is written — see "Second run" and `/review-pr`. 30 tests including a full HTTP smoke test. |
 
 ### Design decisions and tradeoffs
 
@@ -48,6 +54,39 @@ Make this explicit when you walk through the spec and the build: point to the **
 - **Human review:** Spec and code are AI-generated; human still approves the plan and reviews the PR. Evolution: add PR review rules (e.g. security, architecture) and optional “draft PR” automation; keep human in the loop for scope and customer impact.
 - **More of the lifecycle:** We added Verify (product server), PR description, and Linear. Evolution: wire GitHub MCP for real PR creation; add a “post-merge” step (e.g. notify AE, update CRM) when the team’s process requires it.
 
+### Additional signals that would make it more like real-world dev (evolution)
+
+Today we use **three** signals: Gong (what prospects/customers say), Canny (what they vote for), Zendesk (what they struggle with). Real-world workflows often also involve:
+
+| Signal | What it adds | How it would fit |
+|--------|----------------|-------------------|
+| **Existing backlog (Jira / Linear)** | "Is this already a ticket?" Avoids duplicate work; enriches existing issues with customer evidence. | We already use Linear for *output* (create/update issues from spec). Adding it as *input*: before or during triangulation, the agent queries Linear (or Jira MCP) for open issues matching the theme; if there's a match, the spec links to that issue and we comment instead of creating new. Makes the pipeline respect current backlog. |
+| **Feature / product usage** | What do users *do*, not just say? Usage DB (e.g. feature adoption, drop-off, errors by flow). | MCP or API that returns usage metrics by feature or area. Agent factors it into triangulation: e.g. "CSV export requested in Canny + low usage of current export path + high support tickets on export" → stronger signal. Surfaces "nobody uses X" or "everyone abandons at step Y" as evidence. |
+| **Incidents / reliability** | Outages, errors, P0s tied to a feature or service. | Ingest from Pagerduty, Sentry, or internal incident system. "Export fails for workspaces > 100 users" + Canny requests for export → spec calls out scale/reliability in acceptance criteria. |
+| **NPS / CSAT or segment feedback** | Structured feedback by segment (e.g. by plan, role, account). | Survey or CRM data; agent uses it to weight or attribute (e.g. "Enterprise segment consistently asks for X"). Complements Gong/Canny/Zendesk. |
+| **Internal eng pain** | "Hard to maintain," "tech debt," "we keep fixing the same bug." | Source: Linear labels, retros, or a simple "pain" board. Agent can triage: customer-facing vs internal; or "customer asked for X and eng has flagged X as brittle" → higher priority. |
+
+**For the demo:** You can say we chose three signals (Gong, Canny, Zendesk) for scope and because they're universal in enterprises; the same pipeline could ingest backlog, usage, and incidents as additional inputs so prioritization is even closer to how real teams work.
+
+### Other workflow parts and signals the same method could improve (Q&A / evolution)
+
+The same pattern — **ingest signal → turn into spec (with rules) → plan → build → verify → PR** — applies to other parts of the engineering workflow. Each one improves speed by compressing the handoff from "something happened" or "we need X" to shipped code.
+
+| Workflow part / signal | What gets ingested | Speed improvement |
+|------------------------|-------------------|-------------------|
+| **Incident → fix** | Pagerduty/Sentry ticket, stack trace, logs. | Incident → spec for fix (root cause + acceptance criteria) → code change + test. Faster from "page fired" to patch. |
+| **Security / compliance findings** | Scanner output (Snyk, Semgrep), audit checklist. | Findings → spec ("remediate these") → code/config changes. Audit to remediation in one flow. |
+| **Design handoff** | Figma, screenshots, or design spec. | Design → acceptance criteria / spec → implementation. Design-to-code without the developer re-reading every frame. |
+| **Code review feedback** | PR comments as signal. | Comments → spec (list of requested changes) → agent implements. Review to resolution without context switch. |
+| **Dependency / upgrade** | Deprecation notices, CVE, "upgrade to Node 20." | Signal → migration spec (what to change, what to test) → code + tests. Dependency management faster. |
+| **Documentation drift** | Diff between docs and code, or "docs outdated" ticket. | Signal → spec for doc update or code update → agent updates. Keeps docs in sync without manual pass. |
+| **Retro / improvement** | Retro items, "what went wrong," eng feedback. | Items → spec for tooling/process/code improvement → implementation. Retro to actionable change. |
+| **API / contract** | OpenAPI, gRPC proto, or API contract change. | Contract as spec → client code, adapter, or tests. Contract-first development in one run. |
+
+**Unifying idea:** In every case, a **signal** (ticket, finding, design, comment, contract) is turned into a **structured spec** (rules enforce format and quality), then the **agent** plans and builds with the same architecture/test discipline. The POC demonstrates the pattern with customer voice; the pattern itself is reusable across the rest of the engineering lifecycle.
+
+**For the demo / Q&A:** "The same method—ingest a signal, turn it into a spec with rules, then plan and build—could apply to incidents, security findings, design handoff, or PR review comments. We chose customer signal for the prototype because it's the highest-friction handoff in most orgs, but the primitives (rules, MCP, agent) are the same."
+
 ### Enterprise engineering perspective: adoption metrics and outcomes
 
 *Use this when presenting to or anticipating questions from enterprise engineering. These problems came from conversations with that team; the demo and script can speak to each.*
@@ -61,6 +100,21 @@ Make this explicit when you walk through the spec and the build: point to the **
 | **Enterprise engineering ends up owning too much** of customer-facing analytics and success-definition work, pulling them away from core engineering. | The pipeline **produces the artifacts** (specs with origin, PRs with outcome lines) so “success” is visible without EE building custom dashboards. One standard flow (signal → spec → code → PR) yields countable, auditable outcomes. EE can adopt the flow and the rules instead of maintaining one-off analytics; the **definition of success** lives in the spec and PR, not in a separate dashboard EE has to build. |
 
 **Where to use this:** (1) In the **problem intro**, add one sentence: “We also heard that leaders lack a trusted way to measure AI adoption and that metrics skew to volume instead of outcomes; this pipeline is one way to define success by customer impact.” (2) When you **show the PR** (or describe what goes in it), say: “The PR body includes an outcome line — e.g. ‘Closes SYT-17; outcome: CSV export for Acme Corp from Gong/Canny/Zendesk.’ That’s one unit of outcome-based success, not a vanity metric.” (3) In **Q&A**, if someone asks about adoption metrics or executive dashboards, use the table above.
+
+### Pragmatic playbook: Stripe-style lessons (metrics + design)
+
+Stripe's internal coding agent (and similar internal platforms) reinforces design choices we already made. Use these points when discussing metrics or "how should enterprises think about agent success?"
+
+| Stripe lesson | How our demo already does it | Line for the demo / Q&A |
+|---------------|------------------------------|--------------------------|
+| **North star: PRs produced without human code** (not "AI wrote X lines" or "Y% of code") | We lead with **outcome**: shippable PRs with full attribution (spec, code, tests, Linear, outcome line). We count **customer gaps closed** or **PRs from the pipeline**, not lines or AI share. | "Our north star is the same idea Stripe talks about: **PRs produced without human-written code** — actual shippable output. We don't measure 'AI wrote X lines'; we measure 'we closed this customer gap and opened a PR with tests and traceability.' Better proxy for real productivity." |
+| **Vibe coding ≠ production** — contributing to a real codebase is different from prototyping from scratch | We use a **real starter codebase** (AnalyticsService, routes, components), **rules** (architecture, spec template, test requirements), and **verification** (product server, `npm test`). We're not vibe coding from zero; we're adding a feature to an existing system with constraints. | "We're not prototyping from scratch. The agent is contributing to an existing codebase with rules that enforce architecture, tests, and UI visibility. Vibe coding and production contribution are different — we're aligned with the latter." |
+| **Tooling is the unlock** — MCP/plugins make agents useful vs impressive demos | We use **MCPs** for Gong, Canny, Zendesk, Product, Linear. The agent can actually pull signal, create tickets, verify against customer tier. Without those tools, we'd have an impressive demo; with them, we have a runnable pipeline. | "Stripe has hundreds of internal tools; we have a small set of MCPs that let the agent do real work — pull customer signal, create Linear issues, verify features. Tooling is what turns a demo into something that ships." |
+| **Humans in the loop** — agents parallelize grunt work, don't replace devs | **Plan approval** before implementation (unless yolo); **PR review** by human. The agent does ingest → spec → plan → implement; the human approves the plan and reviews the PR. | "Humans stay in the loop. We approve the plan before the agent writes code, and we review the PR. The agent is parallelizing the handoff from signal to spec to code so we can focus on review and the hard problems." |
+
+**Pragmatic playbook (one line):** Powerful models + quality tooling (MCPs, rules) + realistic expectations (humans in the loop, outcome not volume). Our demo is aligned with that.
+
+**When to use:** When someone asks "how do you measure success?" or "how is this different from just having the AI write code?" — lead with "PRs without human code" / outcome, then tie to Stripe if they know the reference. When discussing design, reinforce "vibe ≠ production" and "tooling is the unlock."
 
 ### What the hiring committee is evaluating
 
@@ -92,6 +146,48 @@ Use this to confirm you’ve included everything the project prompt asks for:
 
 ---
 
+## Second run: the "rules say no" beat
+
+**Why this matters for the demo:** The first run shows the pipeline working end-to-end (CSV export ships clean). The second run shows the pipeline **catching a real architectural concern** before any code is written. This directly demonstrates "increase code quality, safety, or consistency" from the prompt.
+
+**Suggested pacing:** ~5 minutes. Fits after the CSV export walkthrough, before design decisions.
+
+### Setup
+
+After the CSV export PR, commit to the branch (or say "assume this is merged"). The spec (`specs/csv-bulk-export.md`) and export code are now in the repo.
+
+### Run
+
+Type `/signal-to-spec` again (or re-run the ingest prompts). The agent will:
+
+1. **Ingest** from the same three sources (Gong, Canny, Zendesk).
+2. **Triangulate** — but this time, see that CSV export already has a spec and implementation. Mark it DONE. The **next strongest signal** is **Dashboard Customization** (2 Gong calls from Stark + Beta, 31 Canny votes from 5 companies, 3 Zendesk tickets across 3 companies).
+3. **Write the spec** for dashboard customization: saved views, custom widget layouts, team-specific dashboards.
+4. **Hit the architecture check** — the `architecture-check` rule fires. Saved views require persisting user/team layout preferences. Our codebase is currently stateless per request — no user configuration storage exists. The agent flags:
+
+   > `NEEDS_DESIGN_REVIEW`: Saved views require a new persistence layer. No user/workspace configuration storage exists in current architecture. The agent must not proceed to implementation until the developer acknowledges.
+
+5. **Stop and present the flag.** The agent asks: proceed with a proposed storage approach, descope to avoid persistence, or defer to architecture review?
+
+### The talking point
+
+"The same pipeline that shipped CSV export in one session just caught an architectural concern on the next feature. Dashboard customization needs saved views — that's the first persistent state in this codebase, and the rules flagged it before a single line of code was written. That's the 'code quality, safety, and consistency' the prompt asks about. The system doesn't just build things — it knows when to stop and ask."
+
+### If they ask "what would you do next?"
+
+"Three options. One: descope — rearrange widgets in-session only, no persistence needed, ships fast. Two: add a lightweight storage layer — localStorage for MVP, backend preferences table for durability. Three: defer to an architecture review to decide the persistence strategy before building. The point is: the developer makes an informed choice instead of a silent assumption that creates tech debt."
+
+### Why this beat matters for the evaluation
+
+| Evaluation criterion | How the second run demonstrates it |
+|---------------------|-------------------------------------|
+| **Code quality, safety, consistency** | Rules catch a real architectural concern before code is written |
+| **Product and technical judgment** | The system distinguishes stateless features (export) from stateful ones (saved views) |
+| **Thoughtfulness around edge cases** | The agent flags the first persistent state as a deliberate decision, not an implicit one |
+| **Enterprise value** | In an enterprise codebase, silent introduction of state management is exactly the kind of thing that causes outages and tech debt |
+
+---
+
 ## Product development lifecycle (what comes next)
 
 After **implementation** (code + UI + tests), the pipeline continues:
@@ -110,6 +206,64 @@ After **implementation** (code + UI + tests), the pipeline continues:
 **Type `/signal-to-spec`** in the Agent chat (Cmd+L). That runs a custom Cursor command that does **Ingest → Triangulate → Spec** in a single flow: the agent pulls from Gong, Canny, and Zendesk, builds the cross-source table, picks the top feature, and writes the spec to `specs/`. No need to paste the three prompts below unless you want to run them step by step.
 
 The command is defined in **`.cursor/commands/signal-to-spec.md`**. You can edit that file to change topics (e.g. “SSO” instead of “analytics and export”) or the spec filename.
+
+---
+
+## Setting up the live demo branch
+
+For the live demo, you want a starting point that has all the **infrastructure** (rules, commands, MCPs, mock data, dashboard UI) but **not** the export implementation. The agent builds the export feature live. If something goes wrong, `main` has the fully working version as a fallback.
+
+### One-time setup (after committing everything to `main`)
+
+```bash
+# Start from main with everything committed
+git checkout main
+
+# Create the demo branch
+git checkout -b demo/live
+
+# Remove the export implementation files (keep everything else)
+git rm src/services/export-service.ts
+git rm src/api/routes/export.ts
+git rm src/__tests__/export-service.test.ts
+git rm src/__tests__/export-route.test.ts
+git rm src/__tests__/smoke-export.test.ts
+git rm specs/csv-bulk-export.md
+```
+
+Then revert `src/app.ts` and `src/server.ts` to not reference the export route:
+
+```bash
+# Revert app.ts to not import export routes
+# (edit src/app.ts to remove the export route import and usage)
+# Revert the Export CSV button from AnalyticsDashboard.tsx
+# (the agent will add it during the live build)
+```
+
+Commit as the "clean starting point":
+
+```bash
+git commit -m "demo: clean starting point for live build (no export implementation)"
+```
+
+### Before each demo run
+
+```bash
+git checkout demo/live
+git reset --hard demo/live  # reset any previous demo artifacts
+```
+
+### Fallback
+
+If the live build stalls or breaks, switch to `main`:
+
+```bash
+git stash  # or git checkout .
+git checkout main
+npm test   # confirm everything works
+```
+
+Then continue the demo from the working state on `main`, saying "here's what the finished implementation looks like."
 
 ---
 
@@ -232,6 +386,45 @@ Use the product server MCP to look up the customer jane@acmecorp.com (from the G
 
 ---
 
+## Step 5b: Run tests (quality gate)
+
+After the build, run the full test suite:
+
+```
+Run npm test and show me the results.
+```
+
+**What should happen:** The agent runs `npx vitest run` and all 30 tests pass across 4 test files:
+- `analytics-service.test.ts` (4 tests) — core analytics service
+- `export-service.test.ts` (12 tests) — CSV generation + validation edge cases (invalid dates, range > 90 days, unknown metrics, end-before-start)
+- `export-route.test.ts` (10 tests) — API route integration tests via supertest (happy path + structured 400 errors)
+- `smoke-export.test.ts` (4 tests) — full HTTP smoke test: starts the Express app on a random port, hits `POST /api/export` with `fetch()`, verifies CSV and error responses over real HTTP
+
+**The talking point:** "30 tests, 4 files. The smoke test starts the real server and makes actual HTTP calls — it's not just mocking. The edge case tests validate that the API returns structured error codes (`RANGE_TOO_LARGE`, `UNKNOWN_METRICS`, `END_BEFORE_START`) — not stack traces. That's the kind of thing that matters in production."
+
+**If they ask about the edge cases:** "The spec said 'export for a date range.' But what if someone requests a year of data? What if the dates are garbage? What if they inject a metric name that doesn't exist? The export service validates all of that before it touches the analytics layer, and the API returns structured JSON errors with codes that a frontend or API consumer can handle programmatically."
+
+---
+
+## Step 5c: Review the PR (architecture + security checks)
+
+After tests pass, run the review command:
+
+**Type `/review-pr`**
+
+**What should happen:** The agent reads the diff, then runs four checks against the project rules:
+
+1. **Architecture gates** — checks for new persistence layers, auth patterns, interface changes, and input-driven output risks. CSV export should pass all gates (stateless, no new auth, no breaking changes, and filename is sanitized).
+2. **Security review** — checks input validation (Zod), injection risk (filename sanitization), CSV injection (metric allowlist), and sensitive data leakage.
+3. **Quality & consistency** — test coverage, error handling, domain language, naming conventions.
+4. **Summary** — one-line verdict (ship it / ship with notes / block and fix).
+
+**The talking point:** "This is the same command any developer on the team would run. It checks the diff against the architecture rules and security gates we defined. For CSV export it should pass clean — the dates are sanitized in the filename, metrics are allowlisted, errors are structured. But when we run the second feature (dashboard customization), the same review would flag the persistence concern. Same command, different outcomes based on the actual risk."
+
+**Why this matters for the prompt:** The prompt lists "automated PR review assistant (e.g., policy, security, or architecture checks)" as an example problem space. This command directly hits that — and it's integrated into the same pipeline, not a separate tool.
+
+---
+
 ## Step 6 (optional): Draft the PR description
 
 ```
@@ -315,7 +508,18 @@ Command: `.cursor/commands/signal-to-pr.md`.
 | **product-server-mock** | `lookup_customer`, `verify_feature_compatibility`              |
 | **linear**      | Create/update issues, list projects, etc. (remote; OAuth)             |
 
-Mock data is aligned: **Acme Corp** and **CSV export** appear in Gong, Canny, and Zendesk so the agent can triangulate one clear top priority.
+Mock data is aligned: **Acme Corp** and **CSV export** appear in Gong, Canny, and Zendesk so the agent can triangulate one clear top priority. After CSV export ships, **Dashboard Customization** is the next strongest signal (2 Gong calls, 31 Canny votes, 3 Zendesk tickets) — and it triggers the architecture check.
+
+## Quick reference: Slash commands
+
+| Command | What it does |
+|---------|-------------|
+| `/signal-to-spec` | Steps 1–3: ingest from Gong/Canny/Zendesk, triangulate, write spec |
+| `/spec-to-linear` | Create a Linear issue from an existing spec |
+| `/do-linear-ticket` | Fetch a Linear issue, find the spec, plan + implement |
+| `/open-pr` | Stage, commit, push, `gh pr create` with outcome line |
+| `/signal-to-pr` | Full pipeline: signal → spec → Linear → build → PR |
+| `/review-pr` | Architecture + security + quality review on the current diff |
 
 ---
 

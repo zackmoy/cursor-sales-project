@@ -8,6 +8,10 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
+// ---------------------------------------------------------------------------
+// Mock data — multiple calls with varied signal types
+// ---------------------------------------------------------------------------
+
 const MOCK_CALLS = [
   {
     id: "call-001",
@@ -32,6 +36,29 @@ const MOCK_CALLS = [
     ],
     topics: ["sso", "security", "compliance", "evaluation"],
   },
+  {
+    id: "call-003",
+    title: "Stark Industries - Dashboard Review & Roadmap",
+    date: "2026-02-13T16:00:00Z",
+    duration: 3200,
+    participants: [
+      { name: "Anna Reyes", email: "anna@stark.io", title: "Director of Data", company: "Stark Industries", isExternal: true },
+      { name: "James Obi", email: "james@stark.io", title: "Senior Analyst", company: "Stark Industries", isExternal: true },
+      { name: "Mike Chen", email: "mike@ourcompany.com", title: "Account Executive", company: "Our Company", isExternal: false },
+    ],
+    topics: ["analytics", "dashboard", "export", "customization", "reporting"],
+  },
+  {
+    id: "call-004",
+    title: "Beta Inc - Renewal Check-in",
+    date: "2026-02-14T11:00:00Z",
+    duration: 1500,
+    participants: [
+      { name: "Carlos Vega", email: "carlos@beta.dev", title: "Engineering Manager", company: "Beta Inc", isExternal: true },
+      { name: "Lisa Park", email: "lisa@ourcompany.com", title: "Account Executive", company: "Our Company", isExternal: false },
+    ],
+    topics: ["renewal", "dashboard", "customization", "pricing"],
+  },
 ];
 
 const MOCK_TRANSCRIPTS = {
@@ -52,7 +79,29 @@ const MOCK_TRANSCRIPTS = {
     { speaker: "Lisa Park", timestamp: "00:02:15", text: "Great news on SOC 2 — we're Type II certified. On SSO, we support SAML and OIDC. Azure AD works natively." },
     { speaker: "Tom Wilson", timestamp: "00:02:45", text: "Oh, that's actually ahead of where I thought you'd be. My team of 50 engineers has been struggling with our current tool. If SSO and the security story check out, we have budget approved for this quarter." },
   ],
+  "call-003": [
+    { speaker: "Mike Chen", timestamp: "00:01:30", text: "Anna, James — great to have you both. I know you had a list of topics for today." },
+    { speaker: "Anna Reyes", timestamp: "00:02:00", text: "Yes. First, export. We have the same problem Jane at Acme mentioned to you — we need CSV export badly. Our data team runs quarterly reviews and right now they're screen-scraping the dashboard." },
+    { speaker: "James Obi", timestamp: "00:02:30", text: "Specifically, we need to be able to export filtered data — not just the full dump, but what's on screen after we apply date range and metric filters. And the column headers need to match what the dashboard shows." },
+    { speaker: "Anna Reyes", timestamp: "00:03:00", text: "The other big ask is dashboard customization. We want saved views — different dashboards for different teams. My data team needs one view, the product team needs another, execs want a high-level summary." },
+    { speaker: "James Obi", timestamp: "00:03:30", text: "We've also noticed the dashboard can get slow when we query more than 90 days of data. Is that a known issue?" },
+    { speaker: "Mike Chen", timestamp: "00:04:00", text: "I'll flag the performance concern for our engineering team. On customization and export — both are on the roadmap. How would you prioritize between them?" },
+    { speaker: "Anna Reyes", timestamp: "00:04:20", text: "Export first, no question. We can live with the default dashboard layout. We can't live without being able to get data out for our board." },
+  ],
+  "call-004": [
+    { speaker: "Lisa Park", timestamp: "00:01:00", text: "Carlos, thanks for hopping on. You're up for renewal in April — wanted to check in on how things are going." },
+    { speaker: "Carlos Vega", timestamp: "00:01:20", text: "Honestly, the dashboard is useful but we're a small team and the pricing feels steep for what we get. We're on the Starter plan and we keep hitting limits." },
+    { speaker: "Carlos Vega", timestamp: "00:01:50", text: "The thing we'd really love is to customize the dashboard — rearrange widgets, hide metrics we don't use. It's cluttered for our use case." },
+    { speaker: "Lisa Park", timestamp: "00:02:10", text: "I hear you on the customization. That's something a few customers have brought up." },
+    { speaker: "Carlos Vega", timestamp: "00:02:30", text: "Also, is there any way to get data out? Even a simple CSV export would help. We sometimes need to pull numbers for our investors." },
+    { speaker: "Lisa Park", timestamp: "00:02:50", text: "Export is on the roadmap — I'll keep you posted. Anything else before renewal?" },
+    { speaker: "Carlos Vega", timestamp: "00:03:10", text: "Just the pricing. If customization and export land, we'd definitely renew. Without them, we'll probably downgrade or look elsewhere." },
+  ],
 };
+
+// ---------------------------------------------------------------------------
+// Tools
+// ---------------------------------------------------------------------------
 
 server.tool(
   "search_calls",

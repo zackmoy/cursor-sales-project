@@ -27,6 +27,7 @@ Every spec MUST follow this template:
 - **Include UI in scope:** For user-facing features, requirements and acceptance criteria MUST cover the frontend (e.g. new or updated components in `src/components/`). Do not ship API-only when the customer need implies a UI (e.g. "export as CSV" implies a way in the app to trigger the export).
 - **Define UI visibility and enablement:** In the UI / Frontend section, explicitly state when each control is shown and when it is enabled (e.g. always visible vs only after another action, disabled until form valid). Implementation must follow the spec; if the spec is silent, ask for clarification rather than guessing.
 - If requirements conflict with our architecture, flag as NEEDS_PRODUCT_REVIEW
+- **Run architecture gates** (see `architecture-check` rule): check the feature against persistence, auth, and interface-change gates. If any gate is triggered, add an `## Architecture Review` section to the spec with the flag(s) and reason. The agent must not proceed to implementation until the developer acknowledges the flag.
 - Acceptance criteria must be testable — no vague language like "should work well"
 - **Every spec must include Test Requirements:** state which test types (unit, integration, component) and how they map to acceptance criteria. Implementation is not done until those tests exist and pass.
 - Technical constraints must reference our actual codebase (e.g. src/services/analytics-service.ts, src/api/routes/analytics.ts, src/components/ when applicable)
