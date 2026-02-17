@@ -23,21 +23,23 @@ When calling Gong's `search_calls`, pass `fromDate` and `toDate` in ISO format b
 
 Pull customer signal from **all three sources** within the **signal window** (see above). Cast a wide net — don't filter to a specific topic yet; the triangulation step will identify the strongest theme.
 
-1. **Gong:** Search for calls in the signal window (default: last two weeks). Get the transcript for the 2–3 most relevant calls that mention product feedback, pain points, or feature requests. Summarize what you found (participants, key quotes, topics raised).
-2. **Canny:** List feature requests sorted by vote count. Note the top requests, their scores, voter companies, and any themes that emerge.
-3. **Zendesk:** Search for recent open or pending tickets. Note recurring themes, which companies are filing them, and any patterns (e.g. multiple tickets about the same pain).
+1. **Gong:** Search for calls in the signal window (default: last two weeks). For relevant calls, use **get_call_participants** to get each participant’s role (title) and affiliation (internal vs external). Get the transcript for the 2–3 most relevant calls that mention product feedback, pain points, or feature requests. Summarize participants (name, title, company from email domain or lookup), key quotes, and topics.
+2. **Canny:** List feature requests sorted by vote count. Note the top requests, their scores, **voter companies** (and if the API exposes company/value data, note it), and any themes.
+3. **Zendesk:** Search for recent open or pending tickets. Note recurring themes, **which companies** are filing them, and any patterns.
+4. **Product server (for weighting):** For each external Gong participant or Canny/Zendesk company you care about, use **lookup_customer** by email (or by known contact) to see if they are an existing customer (tier, seats, renewal) or a prospect. Use this when triangulating — don’t let volume alone decide; factor in role, customer status, and tier.
 
-Give a short report: what each source returned and the **main themes** you see emerging across them.
+Give a short report: what each source returned, the **main themes**, and for key voices note **role** (e.g. VP, Director), **customer vs prospect** (from lookup), and **tier/value** where known.
 
 ---
 
 ## Step 2 — Triangulate
 
-Using that signal across Gong, Canny, and Zendesk:
+Using that signal across Gong, Canny, and Zendesk (and the product server for who is customer vs prospect and tier):
 
-- Build a **cross-source table**: feature/theme name | Gong mentions | Canny votes | Zendesk tickets | Strength (Critical / High / Medium).
-- Pick the **strongest** feature (the one with the most evidence across sources).
-- In 2–3 sentences, explain why it's top priority and cite evidence from each source (exact quotes or numbers).
+- Build a **cross-source table**: feature/theme name | Gong mentions (note role + customer/prospect) | Canny votes (voter companies) | Zendesk tickets (companies) | Strength (Critical / High / Medium).
+- **Prioritization is not “loudest wins.”** Apply the signal-analysis rule: weight by **role** (exec/decision-maker > IC), **customer status** (existing customer, especially Enterprise/Pro, vs prospect), and **sales potential** (tier, deal context, or Canny company value). Use this to rank strength and break ties.
+- Pick the **strongest** feature using that weighted view.
+- In 2–3 sentences, explain why it's top priority: cite evidence from each source and **why this evidence outweighs others** (e.g. “VP at Enterprise customer said X; Canny votes from high-value accounts; Zendesk from same segment”).
 
 ---
 

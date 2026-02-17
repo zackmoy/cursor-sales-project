@@ -16,13 +16,20 @@ alwaysApply: false
 - Flag features that appear in ALL THREE sources as CRITICAL
 - Flag features in TWO sources as HIGH
 - Single-source signals are MEDIUM
-- Weight by: customer tier, deal size, vote count, ticket volume
+- **Do not let "loudest in the room" alone decide.** Weight evidence by the factors below so prioritization reflects role, customer status, and value — not just volume.
+
+## Prioritization factors (use when ranking strength)
+- **Role:** Who said it matters. Use Gong participant `title` (and optionally `get_call_participants`): executive/decision-maker (VP, CTO, Director, Head of) > manager (Engineering Manager) > IC (Analyst, Developer). Same quote from a VP blocks more deals than from an IC.
+- **Customer status:** Long-time or high-value customers outweigh one-off prospects when the ask is similar. Use **product server `lookup_customer`** by participant email (from Gong parties or Canny/Zendesk): if found, note tier (Starter/Pro/Enterprise), seats, renewal; if not found, treat as prospect. Prefer evidence from existing Enterprise/Pro customers over prospects, and from accounts with renewal or expansion potential.
+- **Sales potential / deal context:** When available, factor in deal size or perceived value: tier (Enterprise > Pro > Starter), seats, or Canny voter company value (e.g. `monthlySpend` in Canny live). Deal-blocking language from a large prospect or strategic account raises strength. In real deployments this may come from CRM (e.g. Salesforce); in the demo, use product tier and Canny company data as proxies.
+
+When building the cross-source table, note for each piece of evidence: **who** (role, company), **customer or prospect** (from lookup_customer), and **tier or value proxy** where known. Use that to break ties or upgrade/downgrade strength (e.g. single mention from Enterprise VP + deal-blocking = HIGH even if only one source).
 
 ## Signal Strength Rating
-- 🔴 CRITICAL: Appears in 3 sources, or deal-blocking for >$100K prospect
-- 🟡 HIGH: Appears in 2 sources, or mentioned by multiple customers
-- 🟢 MEDIUM: Single source, single mention
-- ⚪ LOW: Nice-to-have, no urgency signals
+- 🔴 CRITICAL: Appears in 3 sources; or deal-blocking from high-value account (e.g. Enterprise customer or large prospect); or strong ask from decision-maker (VP/CTO/Director) in 2+ sources
+- 🟡 HIGH: Appears in 2 sources; or mentioned by multiple customers (especially existing tier); or single strong mention from strategic account or exec
+- 🟢 MEDIUM: Single source, or multiple mentions but from lower-weight roles/accounts
+- ⚪ LOW: Nice-to-have, no urgency, or only from prospects/ICs with no deal context
 
 ## Already-Addressed Signals
 - Before picking the top feature, check `specs/` for existing spec files and the codebase (`src/`) for already-implemented features. If a feature already has a spec or is already shipped, mark it as DONE in the signal map and move to the next strongest signal.

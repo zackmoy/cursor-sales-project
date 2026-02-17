@@ -10,8 +10,8 @@ Use the **modular** commands (`/signal-to-spec`, `/spec-to-linear`, `/do-linear-
 
 Do the same as **`/signal-to-spec`** (see `.cursor/commands/signal-to-spec.md`), including the **signal window** (default: last two weeks; user can say "last week" or "last month" to override):
 
-- **Ingest:** Pull broadly from Gong (calls in the signal window), Canny (top feature requests by votes), Zendesk (recent open/pending tickets). No topic filter — cast a wide net. Short report with emerging themes.
-- **Triangulate:** Cross-source table, pick strongest feature, cite evidence.
+- **Ingest:** Pull broadly from Gong (calls in the signal window; use get_call_participants and product lookup_customer for role and customer/prospect/tier), Canny (top requests, voter companies), Zendesk (tickets, companies). Short report with themes and, for key voices, role and customer status.
+- **Triangulate:** Cross-source table weighted by role, customer status, and deal potential (see signal-analysis rule); pick strongest feature, cite evidence and why it outweighs others.
 - **Write spec:** Create/overwrite `specs/<feature>.md` with origin, problem, requirements, acceptance criteria, technical constraints, UI, test requirements.
 
 Confirm the spec path and top-priority feature name.
