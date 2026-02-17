@@ -1,0 +1,1 @@
+{"root":["./src/app.ts","./src/main.tsx","./src/server.ts","./src/vite-env.d.ts","./src/__tests__/analytics-service.test.ts","./src/api/routes/analytics.ts","./src/components/analyticsdashboard.tsx","./src/services/analytics-service.ts"],"version":"5.6.3"}
