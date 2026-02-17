@@ -1,0 +1,11 @@
+---
+description: Repo structure, naming, and where to put things
+alwaysApply: true
+---
+
+# Project conventions
+
+- **Layout**: Prefer a clear split (e.g. `src/`, `app/`, or `backend/` / `frontend/`) so the agent and humans can find code quickly. Don’t scatter new code at the repo root.
+- **Naming**: Use descriptive names for files, functions, and variables. Prefer `getUserById` over `get`, `sales-dashboard.tsx` over `page.tsx` when it clarifies purpose.
+- **Config**: Keep env-specific and secret config in env vars or `.env` (and `.env` in `.gitignore`). No hardcoded API keys or credentials.
+- **Dependencies**: Add dependencies via the project’s package manager (e.g. `package.json` + `npm install`). Pin versions in the lockfile; don’t commit `node_modules`.

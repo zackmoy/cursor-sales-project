@@ -1,0 +1,12 @@
+---
+description: Core coding standards—readability, errors, and safety
+alwaysApply: true
+---
+
+# Code standards
+
+- **Readability**: Clear names over clever code. Prefer small functions and explicit control flow.
+- **Errors**: Don’t swallow errors. Log and rethrow (or return a typed error) so failures are visible and debuggable.
+- **Immutability**: Prefer immutable updates (e.g. spread new objects/arrays) over mutating existing data.
+- **Types**: In TypeScript, use proper types for function args and return values; avoid `any` unless necessary and documented.
+- **Security**: Validate and sanitize user input. Use parameterized queries for DB access. Never log secrets or put them in client bundles.

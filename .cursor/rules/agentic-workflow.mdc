@@ -1,0 +1,12 @@
+---
+description: How to do agentic development—planning, todos, and verification
+alwaysApply: true
+---
+
+# Agentic workflow
+
+- **Multi-step tasks (3+ steps)**: Create a todo list with TodoWrite. Use clear, actionable items. Mark complete only after the work is done.
+- **One task in progress**: Prefer a single "in_progress" item; finish or cancel it before starting the next.
+- **Small edits**: Prefer several focused edits over one large change. Each edit should be independently understandable.
+- **Verify after edits**: Run relevant tests or the app when the project supports it. Fix new linter errors in files you changed (use read_lints on edited paths).
+- **No speculative work**: Don’t add docs, comments, or refactors "while you’re here" unless the user asked.

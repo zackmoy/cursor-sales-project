@@ -1,0 +1,10 @@
+---
+description: Where the project plan lives and how to use it
+alwaysApply: true
+---
+
+# Project plan (PRD)
+
+- **Location**: The full project plan is in **PRD.md** at the repo root (or in **docs/** if split into multiple files).
+- **When to use**: For scope, priorities, feature set, and "why we're building this," read the project plan before making decisions. Use it to stay aligned with the product vision and to avoid out-of-scope work.
+- **If missing**: If PRD.md (or docs/) doesn’t exist or is empty, don’t assume scope; ask the user for direction.
