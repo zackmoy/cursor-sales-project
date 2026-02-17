@@ -26,6 +26,8 @@ The prompt asks for a prototype that "meaningfully improve[s] a real-world softw
 
 **Include this in the demo:** By tying specific customer pain to specific AI usage, we show ROI clearly: *AI usage solved THIS pain point.*
 
+TODO: Mention Stripe here.
+
 - **Customer pain (from signal):** e.g. “My analysts are literally screenshotting charts and manually copying numbers. We need CSV export for our Q1 board; if we can’t get it we may have to evaluate alternatives.” (Gong) + 47 Canny upvotes + 5 Zendesk tickets on export.
 - **What the AI did:** Ingested that signal from three sources → triangulated to one top feature (CSV bulk export) → wrote a spec with origin, requirements, and test requirements → produced the implementation (API + UI + tests) and verification against that customer’s tier.
 - **The tie:** The spec and the shipped feature both reference the same customer (Acme Corp), the same quote, and the same Canny/Zendesk evidence. So we can say: *“This CSV export feature exists because the AI turned this customer’s pain and this evidence into this spec and this code. Here’s the line from the spec; here’s the code; here’s the test. ROI: we closed this gap for this customer with full traceability.”*
