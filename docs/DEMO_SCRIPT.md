@@ -52,9 +52,24 @@ Make this explicit when you walk through the spec and the build: point to the **
 ### Limitations and how we’d evolve
 
 - **Mocks vs real APIs:** Today we use mock MCPs. The schemas already match the real APIs (Gong v2, Canny v1, Zendesk v2) so the swap is config-only: point `.cursor/mcp.json` at real MCP servers (Gong has an official MCP; Zendesk has community ones; Canny would need a thin wrapper), add auth credentials, and handle pagination/rate limits. The agent's rules, commands, and prompts don't change.
-- **Scale and context:** Very long transcripts or huge ticket lists could exceed context. Evolution: summarize per source before triangulation; or chunk and merge; or use a separate “summarize this call” step before the main pipeline.
+- **Scale and context:** Very long transcripts or huge ticket lists could exceed context. We keep signal volume small in the prototype and have the agent produce a **per-source summary** before the cross-source table (summarize then triangulate). Evolution: see “Scaling signal (future work)” below.
 - **Human review:** Spec and code are AI-generated; human still approves the plan and reviews the PR. Evolution: add PR review rules (e.g. security, architecture) and optional “draft PR” automation; keep human in the loop for scope and customer impact.
 - **More of the lifecycle:** We added Verify (product server), PR description, and Linear. Evolution: wire GitHub MCP for real PR creation; add a “post-merge” step (e.g. notify AE, update CRM) when the team’s process requires it.
+
+### Scaling signal (future work)
+
+Today the prototype uses a **bounded signal window** and the agent reads a small set of calls, Canny requests, and tickets. There is **no indexing**, **no persistent signal store**, and **no similarity-based clustering**. That’s intentional for the demo; at real volume you’d need the following (document here for future work, not in the prototype):
+
+| Direction | What to add | Why |
+|-----------|-------------|-----|
+| **Summarize before triangulation** | Per-source summarization at ingest (e.g. one short summary per call or per ticket batch). | Keeps context bounded; the agent works on a summary layer, not raw transcripts. The prototype already asks for a per-source summary in the command; at scale this would be a dedicated step or pipeline that writes summaries into a store. |
+| **Chunk and retrieve** | Store signal in chunks (per call, per ticket, per Canny post). At request time, **retrieve** only relevant chunks (by time, topic, account) instead of loading everything. | Prevents “dump the whole world into the prompt.” Implies a store (DB, search index, or vector store) and a retrieval step before the agent runs. |
+| **Embed and cluster** | Embed text (summaries or key sentences) into vectors; use similarity search (e.g. cosine, ANN) to cluster “same ask, different words” across Gong, Canny, Zendesk. Rank clusters by cross-source strength and by role/deal weight. | Deduplicates and finds themes at scale without the model reading every sentence. Tokenization/embedding + similarity is how you go from “lots of noisy mentions” to “prioritized, deduplicated themes.” |
+| **Incremental indexing** | Pipeline that, as new calls/tickets/votes arrive, ingests → summarizes → embeds → writes into the store. Signal-to-spec then **queries the index** (and maybe a few live MCP calls for detail) instead of re-processing everything each time. | Makes the system scalable and up to date; the index is the source of truth that gets updated continuously. |
+| **Who owns the index?** | Either **Cursor** (or a Cursor-backed service) indexes for customers and the agent queries that, or the **customer** (or integrator) runs the indexing pipeline and exposes a query API/MCP that the agent calls. | Product decision; either way, something has to index so retrieval is bounded and relevance-based. |
+| **Human-in-the-loop triage** | System suggests “top N themes” from clustering + ranking; human confirms or reorders; then the agent writes specs for the chosen theme(s). | At scale, triage becomes a separate step so the agent’s job stays scoped and auditable. |
+
+**For the demo / Q&A:** “We keep signal volume small for the prototype and have the agent summarize per source before triangulating. At scale we’d add proper summarization, a signal index, and embedding-based similarity so the same pipeline works over hundreds of calls and tickets. That’s future work we’ve scoped but not built.”
 
 ### Additional signals that would make it more like real-world dev (evolution)
 

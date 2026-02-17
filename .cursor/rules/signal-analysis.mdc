@@ -36,7 +36,8 @@ When building the cross-source table, note for each piece of evidence: **who** (
 - Example: if `specs/csv-bulk-export.md` exists and `src/services/export-service.ts` exists, CSV export is shipped — pick the next priority.
 
 ## Output Format
-1. Cross-source signal map (table showing presence across all channels, noting any DONE features)
-2. Per-feature deep dive (evidence from each source, exact quotes)
-3. Triangulation summary (why the combined signal is stronger than any single source)
-4. Customer quotes (exact words from transcripts, ticket text, Canny descriptions)
+1. **Per-source summary** — 2–3 bullets per source (Gong: themes, key voices; Canny: top requests, voter companies; Zendesk: themes, companies). Do this before the cross-source table so triangulation works on summaries, not raw dump.
+2. Cross-source signal map (table showing presence across all channels, noting any DONE features)
+3. Per-feature deep dive (evidence from each source, exact quotes)
+4. Triangulation summary (why the combined signal is stronger than any single source)
+5. Customer quotes (exact words from transcripts, ticket text, Canny descriptions)

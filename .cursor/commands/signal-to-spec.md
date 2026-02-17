@@ -28,7 +28,7 @@ Pull customer signal from **all three sources** within the **signal window** (se
 3. **Zendesk:** Search for recent open or pending tickets. Note recurring themes, **which companies** are filing them, and any patterns.
 4. **Product server (for weighting):** For each external Gong participant or Canny/Zendesk company you care about, use **lookup_customer** by email (or by known contact) to see if they are an existing customer (tier, seats, renewal) or a prospect. Use this when triangulating — don’t let volume alone decide; factor in role, customer status, and tier.
 
-Give a short report: what each source returned, the **main themes**, and for key voices note **role** (e.g. VP, Director), **customer vs prospect** (from lookup), and **tier/value** where known.
+Give a **per-source summary** before triangulating: 2–3 bullets per source — Gong (themes, key voices with role/customer/tier), Canny (top requests, voter companies), Zendesk (themes, companies). This mirrors “summarize then triangulate”: at scale you’d do this for real so the agent never dumps raw volume into one step.
 
 ---
 
