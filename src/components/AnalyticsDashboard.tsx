@@ -163,11 +163,42 @@ export function AnalyticsDashboard() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<QueryResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const selectedMetrics = useMemo(
     () => AVAILABLE_METRICS.map((m) => m.key),
     [],
   );
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          startDate,
+          endDate,
+          metrics: selectedMetrics,
+          workspaceId: DEFAULT_WORKSPACE,
+        }),
+      });
+      if (!res.ok) throw new Error(`Export failed: HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `analytics-export-${startDate}-to-${endDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   async function fetchData() {
     setLoading(true);
@@ -263,6 +294,18 @@ export function AnalyticsDashboard() {
             }}
           >
             {loading ? "Loading\u2026" : "Run Query"}
+          </button>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting}
+            style={{
+              ...styles.exportButton,
+              opacity: exporting ? 0.6 : 1,
+              cursor: exporting ? "wait" : "pointer",
+            }}
+          >
+            {exporting ? "Exporting\u2026" : "\u2913 Export CSV"}
           </button>
         </div>
       </header>
@@ -397,6 +440,17 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: "var(--radius)",
     background: "var(--color-primary)",
     color: "#fff",
+    fontSize: 13,
+    fontWeight: 600,
+    letterSpacing: 0.2,
+    boxShadow: "var(--shadow-sm)",
+  },
+  exportButton: {
+    padding: "8px 20px",
+    border: "1px solid var(--color-primary)",
+    borderRadius: "var(--radius)",
+    background: "var(--color-primary-light)",
+    color: "var(--color-primary)",
     fontSize: 13,
     fontWeight: 600,
     letterSpacing: 0.2,
