@@ -42,6 +42,39 @@ The **`/spec-to-linear`** command is written to: search first → create only if
 
 ---
 
+## Linear labels for metrics (Cursor-sourced, Cursor-built)
+
+Create two labels in your Linear workspace (or on the team you use): **`Cursor-sourced`** and **`Cursor-built`** (Settings → Labels, or team labels). The pipeline will tag issues automatically:
+
+- **Cursor-sourced:** Applied when an issue is **created** from a spec (`/spec-to-linear` or step 2 of `/signal-to-pr`) or when we **add context** to an existing issue (comment + label). Use for “issues that came from the Signal-to-Code pipeline.”
+- **Cursor-built:** Applied when implementation is **done** via `/do-linear-ticket` or `/signal-to-pr` (after tests pass). Use for “issues that were implemented by the Cursor pipeline.”
+
+You can then filter or report in Linear (e.g. “how many Cursor-sourced this quarter,” “how many Cursor-built”) for adoption and outcome metrics without building custom dashboards.
+
+---
+
+## Automation: slash command vs fully automated
+
+**Can this run in a Cursor agent?**  
+Yes. The pipeline **already runs in the Cursor Agent** (the in-chat agent you get with Cmd+L or Agent mode). When you type `/signal-to-spec`, `/spec-to-linear`, `/do-linear-ticket`, or `/signal-to-pr`, that agent executes the steps: it calls the MCPs, writes the spec, creates/updates the Linear issue, plans, implements, and opens the PR. There is no separate “headless” agent in this repo — the same Agent that you talk to in the chat runs the command.
+
+**What’s automated today?**  
+- **One-shot flow:** You start one Agent chat and invoke one command (e.g. `/signal-to-pr yolo`). The agent runs signal → spec → Linear → plan → implement → tests → PR without pausing for plan approval. The only required human action is **starting the chat and invoking the command**.  
+- **With approval:** Default `/signal-to-pr` (no “yolo”) stops after the plan and waits for you to approve before implementing. So “automation” is configurable: full auto (yolo) vs human-in-the-loop at the plan step.
+
+**What would “fully automated” mean (no human in the loop)?**  
+Fully automated would mean the pipeline runs **without** a human opening Cursor and typing the command. That requires a **trigger** that can start an agent session, for example:
+
+1. **Cursor Background Agent** (if/when it supports it): A Background Agent that runs on a **schedule** (e.g. nightly) or on **events** (e.g. “new Gong call transcribed,” “new Canny request above N votes”) and executes the same pipeline (e.g. ingest → triangulate → spec → Linear; optionally implement + PR with guardrails). The PRD’s “Phase 2/3” (nightly signal ingestion, auto-triage, weekly digest) is this model.
+2. **Cursor API or CLI:** If Cursor exposed an API or CLI that could “start an agent task” with a prompt (e.g. “run the signal-to-pr flow for repo X with yolo”), then an external scheduler (cron, GitHub Action, Zapier) or webhook could trigger the pipeline. Today we’re not aware of a public Cursor API for that.
+3. **External runner:** Reimplement the non–code-gen parts outside Cursor (script that calls Gong/Canny/Zendesk, calls an LLM API for triangulation/spec, creates Linear issue, then triggers Cursor or another code-gen tool for the “build” step). That’s a different architecture; the “single agent in Cursor” story is lost.
+
+**Summary:**  
+- **Runs in Cursor agent?** Yes — the in-chat Agent runs the whole pipeline today.  
+- **Fully automated (no human)?** Only if something can **trigger** that agent (Background Agent with triggers, or Cursor API to start agent tasks). The pipeline is already agent-runnable; the gap is product support for trigger-based execution.
+
+---
+
 ## Other things to keep in mind
 
 - **MCPs in new chats:** If you add or fix an MCP, start a **new** Agent chat so the session has the updated tools.

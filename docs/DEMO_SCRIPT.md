@@ -48,6 +48,20 @@ Make this explicit when you walk through the spec and the build: point to the **
 - **Human review:** Spec and code are AI-generated; human still approves the plan and reviews the PR. Evolution: add PR review rules (e.g. security, architecture) and optional “draft PR” automation; keep human in the loop for scope and customer impact.
 - **More of the lifecycle:** We added Verify (product server), PR description, and Linear. Evolution: wire GitHub MCP for real PR creation; add a “post-merge” step (e.g. notify AE, update CRM) when the team’s process requires it.
 
+### Enterprise engineering perspective: adoption metrics and outcomes
+
+*Use this when presenting to or anticipating questions from enterprise engineering. These problems came from conversations with that team; the demo and script can speak to each.*
+
+| Problem (from enterprise eng) | How the demo / script addresses it |
+|-------------------------------|-------------------------------------|
+| **Leaders don’t have a clear, trusted way to measure “successful AI adoption”**; every enterprise uses different metrics. | This prototype defines one **repeatable unit of success**: one customer-identified pain → one shipped feature with **full traceability** (spec with Origin, code, tests, PR, Linear). Leaders can count those units (“we closed N customer gaps with AI-attributed specs this quarter”) instead of inventing custom dashboards. Same flow, same artifacts, comparable across teams. |
+| **Executive dashboards** (e.g. “60.5% AI share of committed code”) are easy to misinterpret, lack benchmarks, and cause over-reaction when numbers move. | We **don’t lead with volume**. We lead with **outcome**: “This feature exists because we turned this customer’s pain into this spec and this code.” The demo shows spec → code → verify; the PR body includes an outcome line (see below). That gives executives a story (“we closed Acme Corp’s export gap”) instead of a number that moves and gets misinterpreted. |
+| **No shared guidance** on what “good” looks like (normal ranges, top-quartile, cross-company comparison). | The pipeline itself is the **shared playbook**: ingest → triangulate → spec (with origin + test requirements) → build → verify → PR. “Good” = spec has multi-source attribution, acceptance criteria, tests that pass, and verification against the customer. Reusable across orgs; no one-off definitions of “good.” |
+| **Metrics biased toward volume/velocity** (AI share, completions) rather than **outcomes** (code quality, fewer bugs, time saved, business impact). | The demo is **outcome-first**. Success is “we shipped a feature that closes a documented customer pain, with tests and verification.” Quality is built in (rules for tests, UI, acceptance criteria); business impact is explicit (Origin + Customer quotes in the spec, verify with product server). Use this as a talking point: “We’re not optimizing for AI share of code; we’re optimizing for customer gaps closed with traceability.” |
+| **Enterprise engineering ends up owning too much** of customer-facing analytics and success-definition work, pulling them away from core engineering. | The pipeline **produces the artifacts** (specs with origin, PRs with outcome lines) so “success” is visible without EE building custom dashboards. One standard flow (signal → spec → code → PR) yields countable, auditable outcomes. EE can adopt the flow and the rules instead of maintaining one-off analytics; the **definition of success** lives in the spec and PR, not in a separate dashboard EE has to build. |
+
+**Where to use this:** (1) In the **problem intro**, add one sentence: “We also heard that leaders lack a trusted way to measure AI adoption and that metrics skew to volume instead of outcomes; this pipeline is one way to define success by customer impact.” (2) When you **show the PR** (or describe what goes in it), say: “The PR body includes an outcome line — e.g. ‘Closes SYT-17; outcome: CSV export for Acme Corp from Gong/Canny/Zendesk.’ That’s one unit of outcome-based success, not a vanity metric.” (3) In **Q&A**, if someone asks about adoption metrics or executive dashboards, use the table above.
+
 ### What the hiring committee is evaluating
 
 - **Strong problem selection and scoping:** We chose “customer signal → spec → code with attribution,” a well-defined slice of the dev workflow, and scoped to ingest → triangulate → spec → build → verify → PR. We did not try to automate the entire SDLC.
@@ -74,6 +88,7 @@ Use this to confirm you’ve included everything the project prompt asks for:
 - [ ] **Highlight limitations and how you’d evolve** (use “Limitations and how we’d evolve” above).
 - [ ] **Hit evaluation criteria** — problem selection, product/technical judgment, enterprise value, edge cases/risks, clarity (use “What the hiring committee is evaluating” above).
 - [ ] **Pace to 30 minutes** using the suggested timing; leave 15 min for Q&A.
+- [ ] **Optional (enterprise eng / adoption metrics):** If relevant, use “Enterprise engineering perspective: adoption metrics and outcomes” — e.g. one sentence in the problem intro, outcome line when showing the PR, or the table in Q&A when asked about dashboards or success metrics.
 
 ---
 
@@ -82,7 +97,7 @@ Use this to confirm you’ve included everything the project prompt asks for:
 After **implementation** (code + UI + tests), the pipeline continues:
 
 1. **Verify** — Use the Product Server MCP (`lookup_customer`, `verify_feature_compatibility`) to confirm the feature works for the customer(s) from the spec (e.g. Acme Corp tier/config). See Step 5 below.
-2. **PR** — Open a pull request; description should reference the spec in `specs/`, signal origin (Gong/Canny/Zendesk), and stakeholder @mentions. Optionally use GitHub MCP or `/yeet`-style flow when configured.
+2. **PR** — Open a pull request; description should reference the spec in `specs/`, signal origin (Gong/Canny/Zendesk), stakeholder @mentions, and a one-line **outcome** (e.g. “Outcome: CSV export for Acme Corp from Gong/Canny/Zendesk”) so the PR is an outcome-based success artifact. Use `/open-pr` or the PR step in `/signal-to-pr`.
 3. **Review** — Human review of spec, code, and tests. Move the Linear issue to "In Review" or "Done" when merged.
 4. **Merge & deploy** — Per your team’s process (CI/CD, preview envs). Out of scope for the demo unless you’ve wired it.
 
@@ -111,10 +126,9 @@ The command is defined in **`.cursor/commands/signal-to-spec.md`**. You can edit
 2. **Confirm Cursor sees the MCPs**  
    Open **Cursor Settings → MCP**. You should see `gong-mock`, `canny-mock`, `zendesk-mock`, `product-server-mock` with green status. If not, restart Cursor with this project open (`.cursor/mcp.json` is in the repo root).
 
-3. **Optional but helpful:** Add the pipeline rules so the agent triangulates and formats specs consistently. From the PRD, create (or copy) into `.cursor/rules/`:
-   - `signal-analysis.mdc` — cross-source triangulation, signal strength
-   - `spec-template.mdc` — spec format with multi-source attribution  
-   If you skip rules, the agent will still call the MCPs and produce a spec; the output may be less structured.
+3. **Optional but helpful:** Add the pipeline rules so the agent triangulates and formats specs consistently. From the PRD, create (or copy) into `.cursor/rules/`: `signal-analysis.mdc`, `spec-template.mdc`. If you skip rules, the agent will still call the MCPs and produce a spec; the output may be less structured.
+
+4. **Optional — Linear metrics:** In your Linear workspace (or team), create two labels: **`Cursor-sourced`** and **`Cursor-built`** (Settings → Labels). The pipeline will tag issues so you can filter/report on “issues sourced by Cursor” and “issues built by Cursor.” See [DESIGN_NOTES.md](DESIGN_NOTES.md) for details.
 
 ---
 
@@ -260,7 +274,7 @@ After running `/signal-to-spec` (or writing a spec by hand), open a **new Agent 
 
 **`/spec-to-linear`**
 
-That command is defined in `.cursor/commands/spec-to-linear.md`. The agent will read the spec (e.g. `specs/csv-bulk-export.md`), then use the Linear MCP to create an issue with the feature name, origin, problem statement, and requirements. You can then say “put it in project X” or “add label Y” if needed.
+That command is defined in `.cursor/commands/spec-to-linear.md`. The agent will read the spec (e.g. `specs/csv-bulk-export.md`), then use the Linear MCP to create an issue with the feature name, origin, problem statement, and requirements. New issues get the label **`Cursor-sourced`** (create that label in Linear for pipeline metrics). You can then say “put it in project X” or “add label Y” if needed.
 
 Or ask in plain language: *“Create a Linear issue from specs/csv-bulk-export.md and set the project to [your project].”*
 
@@ -272,7 +286,22 @@ After a feature is in Linear, you can implement it from the ticket in one go.
 
 Example: type `/do-linear-ticket` and then `SYT-17`, or paste the Linear issue URL.
 
-The agent fetches the issue from Linear, finds the spec (from the issue or a matching file in `specs/`), writes a short plan, and after you approve implements (services, routes, components, tests). Command: `.cursor/commands/do-linear-ticket.md`.
+The agent fetches the issue from Linear, finds the spec (from the issue or a matching file in `specs/`), writes a short plan, and after you approve implements (services, routes, components, tests). When done, the issue is tagged **`Cursor-built`** for metrics (create that label in Linear if you want). Command: `.cursor/commands/do-linear-ticket.md`.
+
+**Then open a PR:** Run **`/open-pr`** (optionally with the Linear issue id, e.g. SYT-17) to stage, commit, push, and `gh pr create --fill`. Command: `.cursor/commands/open-pr.md`.
+
+### Full pipeline to PR (yolo)
+
+To run **signal → spec → Linear → implement → open PR** in one go:
+
+**Command:** **`/signal-to-pr`**
+
+- The agent runs steps 1–3 (ingest, triangulate, spec), then creates/finds the Linear issue, then plans. By default it **asks for approval** before implementing.
+- To skip the approval step, say **"yolo"**, **"no approval"**, or **"just do it"** in the same message (e.g. `/signal-to-pr yolo`). The agent will implement and then open a PR.
+- **PR step:** Requires **GitHub CLI** (`gh`) installed and authenticated. The agent will `git add`, commit, push, and run `gh pr create --fill`, referencing the Linear issue in the PR title/body.
+- Use the **modular** commands when you want to pause at spec, Linear, or plan; use **this** when you want one continuous run to a PR.
+
+Command: `.cursor/commands/signal-to-pr.md`.
 
 ---
 

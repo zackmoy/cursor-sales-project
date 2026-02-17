@@ -28,9 +28,10 @@ If the matching issue is **not** in a terminal state (e.g. it’s in Backlog, Tr
    - Short **origin** (signal from Gong/Canny/Zendesk, strength)
    - One or two **customer quotes** from the spec
    - That this context was generated from the Signal-to-Code pipeline
-2. **Optionally set assignee** to the correct PM if the spec names one (e.g. in “Stakeholder routing” or “Origin”) or the user says who should own it. If you don’t know the PM’s Linear user, add a line in the comment like: *Suggested owner: [name from spec].*
+2. **Add the label `Cursor-sourced`** to the issue (via Linear MCP update_issue) so it's counted as pipeline-sourced for metrics. If the label doesn't exist in the workspace, skip and mention that the user can create it in Linear (see docs).
+3. **Optionally set assignee** to the correct PM if the spec names one (e.g. in “Stakeholder routing” or “Origin”) or the user says who should own it. If you don’t know the PM’s Linear user, add a line in the comment like: *Suggested owner: [name from spec].*
 
-If the issue is **already In Progress or Done**, still add a **comment** with the spec path and origin so the implementer has the full context. Only change assignee/state if the user asks.
+If the issue is **already In Progress or Done**, still add a **comment** with the spec path and origin; add the label **`Cursor-sourced`** if it exists in the workspace. Only change assignee/state if the user asks.
 
 Reply with the issue identifier (e.g. SYT-17), link, and that you commented (and assigned if applicable).
 
@@ -43,11 +44,16 @@ If there was no matching issue:
 - **Create** a Linear issue with:
   - **Title:** Feature name (e.g. "CSV bulk export for analytics dashboard")
   - **Description:** Origin (signal sources), problem statement, main requirements or acceptance criteria, and the spec file path
-  - **Project/team/labels:** Use what the user asked for, or leave default
+  - **Labels:** Include **`Cursor-sourced`** so the issue is tagged as coming from the Signal-to-Code pipeline (enables metrics: "issues sourced by Cursor"). Add any other labels the user asked for.
+  - **Project/team:** Use what the user asked for, or leave default
 - Reply with the new issue identifier and link.
 
 ---
 
-## 5. If Linear MCP isn’t available
+## 5. Linear labels for metrics
+
+If the workspace has labels **`Cursor-sourced`** and **`Cursor-built`** (create them in Linear: Settings → Labels, or team labels), the pipeline can tag issues for reporting: "Cursor-sourced" = issue created or enriched from our spec/signal pipeline; "Cursor-built" = implementation done via `/do-linear-ticket` or `/signal-to-pr`. You can then filter or report on those labels in Linear.
+
+## 6. If Linear MCP isn’t available
 
 Say: "Linear MCP isn’t connected. Add it in Cursor Settings → MCP and sign in to Linear (see docs/DEMO_SCRIPT.md)."

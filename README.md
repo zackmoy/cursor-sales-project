@@ -49,6 +49,8 @@ Restart Cursor (or reload the window) with this project open. In **Cursor Settin
 - **Full walkthrough:** See **[docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md)** for step-by-step prompts (including build, verify, and PR) and optional manual prompts for each step.
 - **Linear ticket from spec:** Run **`/spec-to-linear`** to create a Linear issue from a spec — or, if one already exists, add a comment with context and optionally assign the PM (see [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md)). Requires [Linear MCP](https://linear.app/docs/mcp) added and signed in once.
 - **Do a Linear ticket:** Run **`/do-linear-ticket`** then give the **issue id** (e.g. SYT-17) or **issue URL**. The agent fetches the issue, finds the spec, plans, and implements (after you approve). Same Linear MCP required.
+- **Full pipeline to PR (yolo):** Run **`/signal-to-pr`** to do signal → spec → Linear → plan → implement → tests → **open a PR** in one go. Say "yolo" or "no approval" in the same message to skip the plan-approval step. Requires `gh` CLI installed and logged in. Defined in `.cursor/commands/signal-to-pr.md`.
+- **Open a PR:** After implementing (e.g. with `/do-linear-ticket`), run **`/open-pr`** to stage, commit, push, and run `gh pr create --fill`. Optionally give a Linear issue id (e.g. SYT-17) to reference in the PR body. Defined in `.cursor/commands/open-pr.md`.
 
 ## Cursor setup
 

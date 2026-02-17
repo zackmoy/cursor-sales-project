@@ -44,6 +44,7 @@ Following our **architecture** (see `.cursor/rules/architecture.mdc`):
   - All commits for this feature go on this branch so the branch is associated with the Linear ticket; PRs can link to the issue by name.
 - Implement the plan: add or edit services, routes, components, and tests. Follow existing patterns in the repo (e.g. `AnalyticsService`, `analytics.ts` route, `AnalyticsDashboard.tsx`).
 - **Run `npm test`** after implementation; fix any failures before considering the feature done.
+- **Add the label `Cursor-built`** to the Linear issue (via Linear MCP update_issue) so it's counted as pipeline-built for metrics. If the label doesn't exist in the workspace, skip and mention that the user can create it (see spec-to-linear command or docs).
 - When done, briefly confirm: branch name (e.g. `feat/SYT-17`), what was added/changed (including test files), and the Linear issue id so the user can move it to In Progress or link a PR.
 
 **Optional:** If the user wants, you can use the Linear MCP to **update the issue** (e.g. set status to "In Progress" when you start, or add a comment with the branch/PR when done). Only do this if the user asks or if the command said to.
