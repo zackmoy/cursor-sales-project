@@ -22,11 +22,23 @@ Use this after you've implemented a feature (e.g. via `/do-linear-ticket`) and w
 ## 3. Push and create PR
 
 - **Push:** `git push -u origin <current-branch>`.
-- **PR:** `gh pr create --fill`. In the PR body, include:
-  - **Reference the Linear issue** (e.g. `Closes SYT-17` or `Implements SYT-17`) if the user gave an issue id or it’s in the branch name.
-  - **One outcome line** when you have context (e.g. from the spec or issue): e.g. `Outcome: [feature] for [customer/source] from Gong/Canny/Zendesk.` That makes the PR an outcome-based success artifact, not just a code change (useful for adoption metrics and exec storytelling).
+- **PR body:** Build the body so reviewers get context and a clear QA path. When a spec exists in `specs/` for this feature (e.g. `specs/csv-bulk-export.md`), use it to fill the summary and QA checklist (problem statement, requirements, acceptance criteria). Use `gh pr create --body-file -` with a body file, or `gh pr create` and then `gh pr edit` with the body, or instruct the user to paste the sections below into the GitHub PR description. Include:
 
-**If `gh` isn’t installed or authenticated:** Tell the user to run `gh pr create --fill` locally or create the PR in the GitHub UI; confirm the branch is pushed and give the branch name.
+  **Summary / implementation**
+  - **Outcome line** (when you have context from spec or issue): e.g. `Outcome: [feature] for [customer/source] from Gong/Canny/Zendesk.`
+  - **Linear:** `Closes SYT-17` (or `Implements SYT-17`) if the user gave an issue id or it’s in the branch name.
+  - **What changed:** 1–3 sentences on the problem and what was built (from the spec’s problem statement and requirements if available).
+  - **Implementation notes:** Short list of key additions/changes — e.g. new route (`POST /api/export`), new service (`export-service.ts`), dashboard button and handler, tests added. Reference file paths so reviewers know where to look.
+
+  **Testing / QA checklist**
+  - Add a **Testing** or **QA checklist** section so reviewers and QA know how to verify the feature. Include:
+    - [ ] **Automated:** `npm test` passes (unit + integration for new code).
+    - [ ] **API** (if applicable): How to hit the new endpoint(s) — method, path, example body/params; expected response or behavior.
+    - [ ] **UI** (if applicable): Short manual steps — e.g. open dashboard, set date range, click Export CSV, confirm file downloads and contents.
+    - [ ] **Acceptance criteria:** 1–3 bullets mapping to the spec’s AC (e.g. “CSV contains selected metrics and date range”, “Button disabled while export in progress”). Pull from the spec when possible.
+  - If the spec has specific test requirements or edge cases (e.g. tier limits, error handling), add a checkbox or note for those.
+
+**If `gh` isn’t installed or authenticated:** Tell the user to run `gh pr create --fill` locally or create the PR in the GitHub UI; give them the branch name and the suggested body sections above so they can paste into the description.
 
 ---
 
