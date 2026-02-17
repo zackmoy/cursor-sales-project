@@ -27,6 +27,7 @@ Following our **architecture** (see `.cursor/rules/architecture.mdc`):
 
 - **List the exact changes** you will make: new or modified files under `src/services/`, `src/api/routes/`, `src/components/`, and `src/__tests__/`. Use our stack: Vite + React frontend, Express API, TypeScript, Zod.
 - **Include UI when the feature is user-facing:** If the spec has a "UI / Frontend" section or the feature clearly has a user-facing surface (e.g. export, dashboard, form), the plan MUST include changes to `src/components/` (or new components). Do not deliver API-only when the spec or customer need implies a UI.
+- **Include tests:** The plan MUST include test file(s) under `src/__tests__/` (unit and/or integration) that map to the spec’s acceptance criteria. If the spec has a "Test Requirements" section, list the tests it calls for and the files you will add or update. At minimum: unit tests for new service/logic, integration tests for new API routes.
 - **Map to acceptance criteria** from the spec (or issue) where possible.
 - Present this as a **numbered plan** and ask the user to approve before writing code.
 
@@ -35,7 +36,8 @@ Following our **architecture** (see `.cursor/rules/architecture.mdc`):
 ## 4. Implement after approval
 
 - Implement the plan: add or edit services, routes, components, and tests. Follow existing patterns in the repo (e.g. `AnalyticsService`, `analytics.ts` route, `AnalyticsDashboard.tsx`).
-- When done, briefly confirm: what was added/changed, and the Linear issue id (e.g. SYT-17) so the user can move it to In Progress or link a PR.
+- **Run `npm test`** after implementation; fix any failures before considering the feature done.
+- When done, briefly confirm: what was added/changed (including test files), and the Linear issue id (e.g. SYT-17) so the user can move it to In Progress or link a PR.
 
 **Optional:** If the user wants, you can use the Linear MCP to **update the issue** (e.g. set status to "In Progress" when you start, or add a comment with the branch/PR when done). Only do this if the user asks or if the command said to.
 

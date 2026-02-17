@@ -39,5 +39,6 @@ For that top-priority feature (e.g. CSV bulk export):
   - **Acceptance criteria** (checkboxes, testable); include at least one criterion for the UI when the feature is user-facing.
   - **Technical constraints:** Backend (e.g. `AnalyticsService`, `src/api/routes/analytics.ts`) and, when applicable, frontend (e.g. `src/components/`).
   - **UI / Frontend:** Which components or pages are new or updated, and what the user can do (or "N/A — API-only" if no user-facing surface).
+  - **Test Requirements:** Which tests are required (unit for new logic/services, integration for new routes) and how they map to acceptance criteria (e.g. "AC: export returns CSV" → unit test for CSV builder + integration test for POST /api/export).
 
 Run all three steps in this conversation. When done, confirm the spec file path and the top-priority feature name.

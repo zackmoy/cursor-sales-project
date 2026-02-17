@@ -31,9 +31,12 @@ alwaysApply: true
 - "export" (NOT "download")
 - "member" (NOT "user" or "account")
 
-## Testing
-- Unit tests in `src/__tests__/` with vitest
-- Map tests to acceptance criteria in specs where applicable
+## Testing (required per feature)
+- **Every feature** must include tests under `src/__tests__/` that cover the spec’s acceptance criteria.
+- **Minimum:** (1) Unit tests for new/updated services or pure logic (e.g. helpers, converters). (2) Integration tests for new/updated API routes (e.g. supertest against the app).
+- **When applicable:** Component tests for non-trivial UI behavior (e.g. user flows, conditional visibility). E2E tests only when the spec or product explicitly requires them.
+- Use vitest. Map test cases to acceptance criteria in the spec (e.g. “AC: valid request → 200” → test that posts valid body and expects 200).
+- Run `npm test` after implementation; fix failures before considering the feature done.
 
 ## PR / Spec Traceability
 - PR description must reference the spec file in `specs/`

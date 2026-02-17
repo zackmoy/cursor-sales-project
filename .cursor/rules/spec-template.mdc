@@ -14,10 +14,11 @@ Every spec MUST follow this template:
 3. **Customer Quotes** — Exact words from transcripts, ticket text, or Canny descriptions
 4. **Requirements** — Numbered list of what must be built (must include both API/backend and UI/frontend when the feature is user-facing)
 5. **Acceptance Criteria** — Checkboxes that map 1:1 to tests
-6. **Technical Constraints** — Integration points (e.g. existing AnalyticsService, API routes), performance requirements
-7. **UI / Frontend** — If the feature is user-facing: which components or pages are affected or new (e.g. `src/components/`), what the user can do (e.g. "Export CSV" button), and **when controls are visible or enabled** (e.g. "Export CSV is always visible; user can export using current date range and metrics without running a query first" vs "Export CSV only appears after a successful query"). Use "N/A — API-only" only when the feature has no user-facing surface.
-8. **Stakeholder Routing** — Which AEs/SEs to notify on the PR (from participant metadata)
-9. **AI Attribution** — Which parts were AI-analyzed vs human-reviewed
+6. **Test Requirements** — Which tests are required for this feature: unit (which modules), integration (which routes or flows), and if applicable component/E2E. At least one acceptance criterion must be covered by a unit or integration test; list the mapping (e.g. “AC: export returns CSV” → unit test for CSV builder + integration test for POST /api/export”).
+7. **Technical Constraints** — Integration points (e.g. existing AnalyticsService, API routes), performance requirements
+8. **UI / Frontend** — If the feature is user-facing: which components or pages are affected or new (e.g. `src/components/`), what the user can do (e.g. "Export CSV" button), and **when controls are visible or enabled** (e.g. "Export CSV is always visible; user can export using current date range and metrics without running a query first" vs "Export CSV only appears after a successful query"). Use "N/A — API-only" only when the feature has no user-facing surface.
+9. **Stakeholder Routing** — Which AEs/SEs to notify on the PR (from participant metadata)
+10. **AI Attribution** — Which parts were AI-analyzed vs human-reviewed
 
 ## Rules
 - Never generate a spec without tracing it to specific customer signal (calls, feature requests, and/or tickets)
@@ -27,4 +28,5 @@ Every spec MUST follow this template:
 - **Define UI visibility and enablement:** In the UI / Frontend section, explicitly state when each control is shown and when it is enabled (e.g. always visible vs only after another action, disabled until form valid). Implementation must follow the spec; if the spec is silent, ask for clarification rather than guessing.
 - If requirements conflict with our architecture, flag as NEEDS_PRODUCT_REVIEW
 - Acceptance criteria must be testable — no vague language like "should work well"
+- **Every spec must include Test Requirements:** state which test types (unit, integration, component) and how they map to acceptance criteria. Implementation is not done until those tests exist and pass.
 - Technical constraints must reference our actual codebase (e.g. src/services/analytics-service.ts, src/api/routes/analytics.ts, src/components/ when applicable)
