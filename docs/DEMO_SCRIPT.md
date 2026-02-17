@@ -579,6 +579,36 @@ Mock data is aligned: **Acme Corp** and **CSV export** appear in Gong, Canny, an
 
 ---
 
+## Plugin: enterprise distribution
+
+Everything in this prototype — rules, commands, hooks, and MCP configs — is packaged as a **Cursor plugin** (`.cursor-plugin/plugin.json`). An enterprise team installs it once, and every developer gets the full signal-to-code pipeline.
+
+```
+signal-to-code/
+├── .cursor-plugin/plugin.json   # Plugin manifest
+├── .cursor/rules/               # 8 rules (architecture, security, spec template...)
+├── .cursor/commands/            # 6 commands (/signal-to-spec, /review-pr...)
+├── .cursor/hooks.json           # 2 hooks (auto-test, security scan)
+├── .cursor/mcp.json             # 5 MCP servers (Gong, Canny, Zendesk, Product, Linear)
+└── mcp-servers/                 # Mock server implementations
+```
+
+**The talking point:** "Everything you just saw — the rules, commands, hooks, and MCP connections — is packaged as a Cursor plugin. An enterprise team installs it once. New hire on day one? They install the plugin and they have the same signal-to-code workflow as everyone else. Swap the mock MCP servers for real Gong/Canny/Zendesk APIs and it's production-ready. That's the enterprise distribution story."
+
+**Why this matters:** The prompt asks about "meaningful value to an enterprise organization shipping production software." A plugin isn't just a demo — it's a distributable product. Enterprise teams can version it, review it, and roll it out across hundreds of developers. Platform and security teams can audit the hooks and rules before approval. That's how tooling actually ships in enterprises.
+
+**Five Cursor primitives in one plugin:**
+
+| Primitive | Count | What it does |
+|-----------|-------|-------------|
+| **Rules** | 8 | Define what to enforce (architecture, security, spec format, domain language) |
+| **Commands** | 6 | Define how to run workflows (signal-to-spec, review-pr, open-pr...) |
+| **MCPs** | 5 | Connect to external systems (Gong, Canny, Zendesk, Product Server, Linear) |
+| **Hooks** | 2 | Enforce quality gates automatically (auto-test on stop, security scan on edit) |
+| **Plugin** | 1 | Package and distribute all of the above to every developer on the team |
+
+---
+
 ## Design notes (commands vs prompts, Linear duplicates)
 
 See **[docs/DESIGN_NOTES.md](DESIGN_NOTES.md)** for:

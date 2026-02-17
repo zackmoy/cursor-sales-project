@@ -1,0 +1,29 @@
+{
+  "name": "signal-to-code",
+  "version": "1.0.0",
+  "description": "Customer signal → spec → code pipeline. Ingests from Gong, Canny, and Zendesk, triangulates the strongest feature signals, generates specs with multi-source attribution, builds with architecture enforcement, and reviews with security gates. Includes 8 rules, 6 commands, 2 hooks, and 5 MCP servers.",
+  "author": {
+    "name": "Zack",
+    "email": "zack@example.com"
+  },
+  "homepage": "https://github.com/zack/cursor-sales-project",
+  "repository": "https://github.com/zack/cursor-sales-project",
+  "license": "MIT",
+  "keywords": [
+    "enterprise",
+    "customer-signal",
+    "spec-to-code",
+    "gong",
+    "canny",
+    "zendesk",
+    "linear",
+    "architecture",
+    "security",
+    "hooks",
+    "mcp"
+  ],
+  "rules": ".cursor/rules/",
+  "commands": ".cursor/commands/",
+  "hooks": ".cursor/hooks.json",
+  "mcpServers": ".cursor/mcp.json"
+}

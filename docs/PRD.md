@@ -142,6 +142,12 @@ The product-mock has 4 customers across 3 tiers with real compatibility logic:
 
 ---
 
+### Plugin (`.cursor-plugin/plugin.json`)
+
+The pipeline is packaged as a Cursor plugin for enterprise distribution. The manifest references the project's rules, commands, hooks, and MCP configs. Teams install it once; every developer gets the full workflow. Mock MCP servers ship with the plugin for evaluation; swap them for real Gong/Canny/Zendesk APIs in production.
+
+---
+
 ## Design Decisions
 
 1. **Three signal sources, not one.** Triangulation surfaces the strongest patterns and avoids over-weighting a single voice. Tradeoff: more MCPs; benefit is higher-confidence prioritization.
