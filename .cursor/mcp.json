@@ -6,7 +6,16 @@
     },
     "canny-mock": {
       "command": "node",
-      "args": ["./mcp-servers/canny-mock/index.js"]
+      "args": ["./mcp-servers/canny-mock/index.js"],
+      "disabled": false
+    },
+    "canny-live": {
+      "command": "node",
+      "args": ["./mcp-servers/canny-live/index.js"],
+      "env": {
+        "CANNY_API_KEY": "${CANNY_API_KEY}"
+      },
+      "disabled": true
     },
     "zendesk-mock": {
       "command": "node",

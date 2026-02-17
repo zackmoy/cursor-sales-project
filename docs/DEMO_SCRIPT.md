@@ -45,11 +45,11 @@ Make this explicit when you walk through the spec and the build: point to the **
 - **Three signal sources, not one:** Triangulation (Gong + Canny + Zendesk) surfaces the strongest feature and avoids over-weighting a single loud voice. Tradeoff: more MCPs and rules; we accept that for higher-confidence prioritization.
 - **Rules + commands together:** Rules (e.g. `spec-template`, `architecture`) define *what* must be in specs and code. Commands (`/signal-to-spec`, `/do-linear-ticket`) define *how* the agent runs the workflow. Tradeoff: some duplication; benefit is consistency and versioned, reviewable flows.
 - **Spec as source of truth:** Spec includes origin, acceptance criteria, **test requirements**, and **UI visibility/enablement**. Implementation follows the spec; if the spec is silent (e.g. “when is the button shown?”), the rule says ask rather than guess. Tradeoff: specs are longer; benefit is fewer “we forgot the UI” or “we shipped without tests” surprises.
-- **Mock MCPs first:** Demo uses mock Gong/Canny/Zendesk/Product servers so the pipeline runs without real API keys. Same tool names and payloads as real integrations; swap mocks for real MCPs when deploying. Tradeoff: demo data is fixed; benefit is runnable in 30 minutes in any environment.
+- **Mock MCPs with real API schemas:** Demo uses mock Gong/Canny/Zendesk/Product servers so the pipeline runs without real API keys. The mocks aren't toy data — they return responses shaped to match the **real vendor API schemas**: Gong API v2 call/transcript/party objects, Canny API v1 post/vote/board/user objects, Zendesk Support API v2 ticket/comment objects with snake_case fields, integer IDs, `via` objects, and standard response envelopes. Same tool names, same field names, same nesting. Swap mocks for real API credentials and the agent's behavior doesn't change. Tradeoff: demo data is fixed; benefit is runnable in 30 minutes and zero refactoring when going live.
 
 ### Limitations and how we’d evolve
 
-- **Mocks vs real APIs:** Today we use mock MCPs. Evolution: plug in real Gong/Canny/Zendesk (and product) APIs with the same tool contracts; add auth and rate limits; handle pagination and large result sets.
+- **Mocks vs real APIs:** Today we use mock MCPs. The schemas already match the real APIs (Gong v2, Canny v1, Zendesk v2) so the swap is config-only: point `.cursor/mcp.json` at real MCP servers (Gong has an official MCP; Zendesk has community ones; Canny would need a thin wrapper), add auth credentials, and handle pagination/rate limits. The agent's rules, commands, and prompts don't change.
 - **Scale and context:** Very long transcripts or huge ticket lists could exceed context. Evolution: summarize per source before triangulation; or chunk and merge; or use a separate “summarize this call” step before the main pipeline.
 - **Human review:** Spec and code are AI-generated; human still approves the plan and reviews the PR. Evolution: add PR review rules (e.g. security, architecture) and optional “draft PR” automation; keep human in the loop for scope and customer impact.
 - **More of the lifecycle:** We added Verify (product server), PR description, and Linear. Evolution: wire GitHub MCP for real PR creation; add a “post-merge” step (e.g. notify AE, update CRM) when the team’s process requires it.
@@ -556,13 +556,15 @@ Hooks are the **fourth Cursor extensibility primitive** alongside Rules, Command
 
 ## Quick reference: MCP tools
 
-| Server          | Tools                                                                 |
-|-----------------|-----------------------------------------------------------------------|
-| **gong-mock**   | `search_calls`, `get_transcript`, `get_call_participants`             |
-| **canny-mock**  | `search_feature_requests`, `get_request_details`, `get_request_voters`|
-| **zendesk-mock**| `search_tickets`, `get_ticket_details`, `get_ticket_comments`         |
-| **product-server-mock** | `lookup_customer`, `verify_feature_compatibility`              |
-| **linear**      | Create/update issues, list projects, etc. (remote; OAuth)             |
+| Server          | Tools                                                                 | Real API modeled |
+|-----------------|-----------------------------------------------------------------------|------------------|
+| **gong-mock**   | `search_calls`, `get_transcript`, `get_call_participants`             | Gong API v2 (`GET /v2/calls`, `POST /v2/calls/transcript`) — Party objects with `speakerId`, `affiliation`, `emailAddress`; transcript monologues with ms-offset sentences; standard `{ requestId, records, calls }` envelope |
+| **canny-mock**  | `search_feature_requests`, `get_request_details`, `get_request_voters`| Canny API v1 (`POST /api/v1/posts/list`, `/posts/retrieve`, `/votes/list`) — Post objects with `score`, `details`, `tags` (objects), `board`, `category`, `author` (User); Vote objects with full `voter` User and `companies` |
+| **zendesk-mock**| `search_tickets`, `get_ticket_details`, `get_ticket_comments`         | Zendesk Support API v2 (`GET /api/v2/search.json`, `/tickets/{id}.json`, `/tickets/{id}/comments.json`) — integer IDs, snake_case fields, `via` object, `result_type`, `html_body`/`plain_body` on comments; `{ results, count, next_page }` envelope |
+| **product-server-mock** | `lookup_customer`, `verify_feature_compatibility`              | Internal (custom) — tier-based capability gates, feature prerequisites, config limits |
+| **linear**      | Create/update issues, list projects, etc. (remote; OAuth)             | Real Linear API via official MCP |
+
+**The talking point:** "These aren't toy mocks. Each one returns data shaped exactly like the real vendor API — same field names, same nesting, same response envelopes. Gong calls have `speakerId` and `affiliation` like the real Gong API v2. Zendesk tickets have integer IDs, `requester_id`, `organization_id`, `via` objects, and snake_case fields. Canny posts have `score` (not 'voteCount'), `details` (not 'description'), and tag/board/user objects matching their docs. When you swap in real API credentials, the agent's prompts and rules don't need a single change."
 
 Mock data is aligned: **Acme Corp** and **CSV export** appear in Gong, Canny, and Zendesk so the agent can triangulate one clear top priority. After CSV export ships, **Dashboard Customization** is the next strongest signal (2 Gong calls, 31 Canny votes, 3 Zendesk tickets) — and it triggers the architecture check.
 
@@ -589,7 +591,7 @@ signal-to-code/
 ├── .cursor/rules/               # 8 rules (architecture, security, spec template...)
 ├── .cursor/commands/            # 6 commands (/signal-to-spec, /review-pr...)
 ├── .cursor/hooks.json           # 2 hooks (auto-test, security scan)
-├── .cursor/mcp.json             # 5 MCP servers (Gong, Canny, Zendesk, Product, Linear)
+├── .cursor/mcp.json             # 6 MCP servers (Gong, Canny mock+live, Zendesk, Product, Linear)
 └── mcp-servers/                 # Mock server implementations
 ```
 
@@ -603,9 +605,60 @@ signal-to-code/
 |-----------|-------|-------------|
 | **Rules** | 8 | Define what to enforce (architecture, security, spec format, domain language) |
 | **Commands** | 6 | Define how to run workflows (signal-to-spec, review-pr, open-pr...) |
-| **MCPs** | 5 | Connect to external systems (Gong, Canny, Zendesk, Product Server, Linear) |
+| **MCPs** | 6 | Connect to external systems (Gong, Canny mock, Canny live, Zendesk, Product Server, Linear) |
 | **Hooks** | 2 | Enforce quality gates automatically (auto-test on stop, security scan on edit) |
 | **Plugin** | 1 | Package and distribute all of the above to every developer on the team |
+
+---
+
+## Live swap: mock → real Canny API
+
+**Why this beat matters:** The entire demo runs on mocks. This beat *proves* the "config-only swap" claim by switching one MCP from mock to live — in front of the audience.
+
+### Setup (before the demo)
+
+1. **Canny account:** Create a board called "Feature Requests" and add 5–6 posts matching the mock data:
+   - "Bulk CSV export from analytics dashboard" (~47 votes)
+   - "Dashboard customization and saved views" (~31 votes)
+   - "Azure AD / SAML SSO support" (~23 votes)
+   - "Scheduled / automated CSV export via API" (~18 votes)
+   - "Faster queries for 90+ day date ranges" (~14 votes)
+
+2. **API key:** Set `CANNY_API_KEY` in your environment (shell profile, `.env` at repo root, or export before launching Cursor). The key is read from the env var — never hardcoded, never committed.
+
+3. **Install deps** (once):
+   ```bash
+   cd mcp-servers/canny-live && npm install && cd ../..
+   ```
+
+### During the demo
+
+After the full pipeline runs with all mocks, say:
+
+> "Everything you just saw used mock data. Let me prove the swap is real."
+
+1. Open `.cursor/mcp.json` in the editor (it's already on screen or one click away).
+2. Set `canny-mock` to `"disabled": true` and `canny-live` to `"disabled": false` (or remove the `disabled` line). This is a two-line edit.
+3. Reload the window (Cmd+Shift+P → "Developer: Reload Window") or restart the MCP servers.
+4. Open a **new Agent chat** and run `/signal-to-spec` again (or just the Canny step: "Search Canny for feature requests about export").
+
+**What should happen:** The agent calls `search_feature_requests` — but this time it hits the real Canny API. Real posts, real vote counts, real user data come back in the exact same schema. The triangulation still works alongside the Gong/Zendesk mocks.
+
+### The talking point
+
+"I just swapped one line in the MCP config — from the mock server to the live Canny API. Same tool name, same response schema, same agent behavior. The rules, commands, and prompts didn't change. That's what 'production-ready swap' looks like: it's a config change, not a rewrite."
+
+### Fallback
+
+If the network is slow or the API has issues, swap back to `canny-mock` in 10 seconds. Say: "Same schema, same pipeline — just a different data source. That's also the point: the agent doesn't care which backend serves the data."
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `mcp-servers/canny-live/index.js` | Real Canny MCP server (~100 lines). Same 3 tools as mock. Calls `https://canny.io/api/v1/` with your API key. |
+| `mcp-servers/canny-live/.env.example` | Documents required env var |
+| `.cursor/mcp.json` | Both `canny-mock` and `canny-live` entries; toggle `disabled` to swap |
 
 ---
 
