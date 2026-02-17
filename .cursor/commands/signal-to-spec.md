@@ -4,15 +4,30 @@ Do the following in order. Use our rules (signal-analysis, spec-template) when t
 
 ---
 
+## Signal window (configurable)
+
+**Default:** Last **two weeks**. Use this unless the user asks for a different window.
+
+**How to configure:** Include the time range in the same message as the command. Examples: `/signal-to-spec`, `/signal-to-spec last month`, `/signal-to-spec find the most important issues in the last week`. No separate config file — the user's words override the default.
+
+**Override:** If the user specifies a time range (e.g. "last week", "last month", "last quarter"), use that for Gong and any source that supports date filtering. Rationale:
+- **Last week** — Suits fast-moving teams (e.g. startups) that get feedback constantly and want to react to what's hot right now.
+- **Last month** — Suits larger orgs that run monthly review cycles or need more volume before prioritizing.
+- **Last two weeks** (default) — Balanced: enough signal to triangulate, recent enough to be actionable.
+
+When calling Gong's `search_calls`, pass `fromDate` and `toDate` in ISO format based on the chosen window. Canny and Zendesk don't filter by date in this setup; their results are recency-ordered or vote-ordered as the API provides.
+
+---
+
 ## Step 1 — Ingest
 
-Pull recent customer signal about **analytics and export** from all three sources:
+Pull customer signal from **all three sources** within the **signal window** (see above). Cast a wide net — don't filter to a specific topic yet; the triangulation step will identify the strongest theme.
 
-1. **Gong:** Search for calls that mention analytics or export, then get the transcript for the most relevant call. Summarize what you found (participants, key quotes, pain points).
-2. **Canny:** Search for feature requests about export or CSV. Note vote counts, status, and voter companies.
-3. **Zendesk:** Search for tickets tagged export or csv. Note how many and which companies.
+1. **Gong:** Search for calls in the signal window (default: last two weeks). Get the transcript for the 2–3 most relevant calls that mention product feedback, pain points, or feature requests. Summarize what you found (participants, key quotes, topics raised).
+2. **Canny:** List feature requests sorted by vote count. Note the top requests, their scores, voter companies, and any themes that emerge.
+3. **Zendesk:** Search for recent open or pending tickets. Note recurring themes, which companies are filing them, and any patterns (e.g. multiple tickets about the same pain).
 
-Give a short report: what each source returned and the main themes.
+Give a short report: what each source returned and the **main themes** you see emerging across them.
 
 ---
 
@@ -20,15 +35,15 @@ Give a short report: what each source returned and the main themes.
 
 Using that signal across Gong, Canny, and Zendesk:
 
-- Build a **cross-source table**: feature name | Gong mentions | Canny votes | Zendesk tickets | Strength (Critical / High / Medium).
+- Build a **cross-source table**: feature/theme name | Gong mentions | Canny votes | Zendesk tickets | Strength (Critical / High / Medium).
 - Pick the **strongest** feature (the one with the most evidence across sources).
-- In 2–3 sentences, explain why it’s top priority and cite evidence from each source (exact quotes or numbers).
+- In 2–3 sentences, explain why it's top priority and cite evidence from each source (exact quotes or numbers).
 
 ---
 
 ## Step 3 — Write the spec
 
-For that top-priority feature (e.g. CSV bulk export):
+For that top-priority feature:
 
 - **Create or overwrite** a spec file in `specs/` with a kebab-case name (e.g. `specs/csv-bulk-export.md`).
 - Include:

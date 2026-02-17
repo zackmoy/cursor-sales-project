@@ -8,11 +8,11 @@ Use the **modular** commands (`/signal-to-spec`, `/spec-to-linear`, `/do-linear-
 
 ## 1. Signal → Spec (steps 1–3)
 
-Do the same as **`/signal-to-spec`** (see `.cursor/commands/signal-to-spec.md`):
+Do the same as **`/signal-to-spec`** (see `.cursor/commands/signal-to-spec.md`), including the **signal window** (default: last two weeks; user can say "last week" or "last month" to override):
 
-- **Ingest:** Gong (calls about analytics/export), Canny (export/CSV requests), Zendesk (export/csv tickets). Short report.
+- **Ingest:** Pull broadly from Gong (calls in the signal window), Canny (top feature requests by votes), Zendesk (recent open/pending tickets). No topic filter — cast a wide net. Short report with emerging themes.
 - **Triangulate:** Cross-source table, pick strongest feature, cite evidence.
-- **Write spec:** Create/overwrite `specs/<feature>.md` (e.g. `specs/csv-bulk-export.md`) with origin, problem, requirements, acceptance criteria, technical constraints, UI, test requirements.
+- **Write spec:** Create/overwrite `specs/<feature>.md` with origin, problem, requirements, acceptance criteria, technical constraints, UI, test requirements.
 
 Confirm the spec path and top-priority feature name.
 

@@ -44,6 +44,7 @@ Make this explicit when you walk through the spec and the build: point to the **
 
 - **Three signal sources, not one:** Triangulation (Gong + Canny + Zendesk) surfaces the strongest feature and avoids over-weighting a single loud voice. Tradeoff: more MCPs and rules; we accept that for higher-confidence prioritization.
 - **Rules + commands together:** Rules (e.g. `spec-template`, `architecture`) define *what* must be in specs and code. Commands (`/signal-to-spec`, `/do-linear-ticket`) define *how* the agent runs the workflow. Tradeoff: some duplication; benefit is consistency and versioned, reviewable flows.
+- **Configurable signal window:** The “recent” window for pulling signal (e.g. Gong calls) is configurable. **Default: last two weeks** — enough to triangulate, recent enough to be actionable. **Startups** often want “last week” (feedback comes in constantly; they want to react to what’s hot). **Enterprises** may want “last month” (more stakeholders, monthly review cycles, need volume before prioritizing). The user can say “from the last week” or “last month” when running `/signal-to-spec` or `/signal-to-pr`; the agent uses that. One line for the demo: “This is configurable — we default to two weeks, but a fast-moving team might say last week, and a larger org might say last month.”
 - **Spec as source of truth:** Spec includes origin, acceptance criteria, **test requirements**, and **UI visibility/enablement**. Implementation follows the spec; if the spec is silent (e.g. “when is the button shown?”), the rule says ask rather than guess. Tradeoff: specs are longer; benefit is fewer “we forgot the UI” or “we shipped without tests” surprises.
 - **Mock MCPs with real API schemas:** Demo uses mock Gong/Canny/Zendesk/Product servers so the pipeline runs without real API keys. The mocks aren't toy data — they return responses shaped to match the **real vendor API schemas**: Gong API v2 call/transcript/party objects, Canny API v1 post/vote/board/user objects, Zendesk Support API v2 ticket/comment objects with snake_case fields, integer IDs, `via` objects, and standard response envelopes. Same tool names, same field names, same nesting. Swap mocks for real API credentials and the agent's behavior doesn't change. Tradeoff: demo data is fixed; benefit is runnable in 30 minutes and zero refactoring when going live.
 
@@ -205,7 +206,7 @@ After **implementation** (code + UI + tests), the pipeline continues:
 
 **Type `/signal-to-spec`** in the Agent chat (Cmd+L). That runs a custom Cursor command that does **Ingest → Triangulate → Spec** in a single flow: the agent pulls from Gong, Canny, and Zendesk, builds the cross-source table, picks the top feature, and writes the spec to `specs/`. No need to paste the three prompts below unless you want to run them step by step.
 
-The command is defined in **`.cursor/commands/signal-to-spec.md`**. You can edit that file to change topics (e.g. “SSO” instead of “analytics and export”) or the spec filename.
+The command is defined in **`.cursor/commands/signal-to-spec.md`**. It is intentionally topic-agnostic: the agent discovers the top feature from the data, not from the prompt.
 
 ---
 
@@ -323,15 +324,15 @@ When the MCPs are connected, the agent will call `search_calls`, `get_transcript
 Open **Agent (Cmd+L)** and paste:
 
 ```
-Pull recent customer signal about analytics and export:
-1. Use the Gong tools to search for calls from the last two weeks that mention analytics or export, then get the transcript for the most relevant call.
-2. Use the Canny tools to search for feature requests about export or CSV.
-3. Use the Zendesk tools to search for tickets tagged export or csv.
+Pull recent customer signal from all three sources:
+1. Use the Gong tools to search for recent calls (last two weeks) and get transcripts for the 2–3 most relevant ones. Summarize participants, key quotes, and topics raised.
+2. Use the Canny tools to list feature requests sorted by votes. Note the top requests, scores, and voter companies.
+3. Use the Zendesk tools to search for recent open/pending tickets. Note recurring themes and which companies are filing them.
 
-Summarize what you found from each source (calls, feature requests, support tickets) in one short report.
+Summarize what you found from each source in one short report. What themes emerge?
 ```
 
-**What should happen:** The agent calls `search_calls`, `get_transcript`, `search_feature_requests`, and `search_tickets`. You get a summary that includes Acme Corp’s CSV export pain (Gong), the 47-upvote Canny request, and Zendesk tickets about export workarounds.
+**What should happen:** The agent pulls broadly from all three sources with no topic hint. It naturally discovers that **CSV export** is the dominant theme: Acme Corp's pain on Gong, the highest-voted Canny request, and a cluster of Zendesk tickets. The agent surfaces this without being told to look for it.
 
 ---
 
