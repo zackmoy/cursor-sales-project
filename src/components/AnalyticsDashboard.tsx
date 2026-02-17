@@ -161,6 +161,7 @@ export function AnalyticsDashboard() {
   const [startDate, setStartDate] = useState("2026-02-01");
   const [endDate, setEndDate] = useState("2026-02-15");
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [result, setResult] = useState<QueryResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -168,6 +169,41 @@ export function AnalyticsDashboard() {
     () => AVAILABLE_METRICS.map((m) => m.key),
     [],
   );
+
+  async function handleExport() {
+    setExporting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          startDate,
+          endDate,
+          metrics: selectedMetrics,
+          workspaceId: DEFAULT_WORKSPACE,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Export failed: ${res.statusText}`);
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `analytics-export-${endDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   async function fetchData() {
     setLoading(true);
@@ -252,6 +288,21 @@ export function AnalyticsDashboard() {
               />
             </label>
           </div>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting || loading}
+            style={{
+              ...styles.button,
+              background: "var(--color-surface)",
+              color: "var(--color-text)",
+              border: "1px solid var(--color-border)",
+              opacity: exporting ? 0.6 : 1,
+              cursor: exporting ? "wait" : "pointer",
+            }}
+          >
+            {exporting ? "Exporting..." : "Export CSV"}
+          </button>
           <button
             type="button"
             onClick={fetchData}

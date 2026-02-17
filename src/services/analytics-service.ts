@@ -81,4 +81,18 @@ export class AnalyticsService {
       totalRows: days,
     };
   }
+
+  async exportToCsv(params: AnalyticsQuery): Promise<string> {
+    const result = await this.query(params);
+    const headers = ["Date", ...params.metrics];
+    const rows = result.labels.map((date, i) => {
+      const row = [date];
+      for (const metric of params.metrics) {
+        row.push(result.data[metric][i].toString());
+      }
+      return row.join(",");
+    });
+
+    return [headers.join(","), ...rows].join("\n");
+  }
 }
