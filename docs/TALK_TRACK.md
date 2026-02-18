@@ -1,16 +1,17 @@
 # Talk track: Signal-to-Code
 
-Use this as your spoken overview when presenting the demo. Adjust for audience and time; the sections map to DEMO_SCRIPT and slides-workflow-extensions.
-
----
-
 ## 1. Opener (30–60 sec)
 
-**Real-world software development isn’t just writing code — it’s responding to customer feedback.** As AI makes code abundant, the bottleneck shifts from "engineering hours" to "sequencing and release." The hardest problem becomes deciding *what* to build.
+**Real-world software development isn’t just writing code — it’s responding to customer feedback.** I've spoken to leaders at NVIDIA, Netflix, Adobe, and Doximity this week, and the theme is consistent: As AI makes code abundant, the bottleneck shifts from "engineering hours" to "sequencing and release." The hardest problem becomes deciding *what* to build.
+
+(Doximity, NVIDIA, Netflix, Financial Services, Motion, Adobe, Telecom, etc)
 
 That feedback is already there: in Zendesk tickets, in Canny votes, on Gong calls. But it lives in three different systems. By the time a developer sees a Jira ticket, the customer’s words have been translated three times and the evidence is gone.
 
 **We built a prototype that pulls that signal into one place and turns it into a spec and code with full attribution.** Same workflow you already have — ingest, triangulate, spec, build, verify, PR — but the handoff from “what the customer said” to “what we shipped” happens inside Cursor, with traceability all the way back.
+
+**Quotes:**
+> Too often I find PMs not talking to customers and the same pain points surface multiple times. And those pain points get gated by product. Despite engineering wanting to resolve them. 
 
 ---
 
@@ -18,7 +19,7 @@ That feedback is already there: in Zendesk tickets, in Canny votes, on Gong call
 
 **The problem for Customers:** Enterprise teams lose customer signal. A feature request shows up as words on a Gong call, a vote on Canny, and a pattern in Zendesk — but those live in separate tools. Prioritization becomes guesswork.
 
-**The problem for Engineering Leaders (NVIDIA, Adobe, Stripe):** "Lines of Code" is a vanity metric. "AI Acceptance Rate" is interesting but doesn't measure value. Leaders need a metric that matters.
+**The problem for Engineering Leaders (NVIDIA, Adobe, Stripe, Netflix):** "Lines of Code" is a vanity metric. "AI Acceptance Rate" is interesting but doesn't measure value. Leaders need a metric that matters.
 
 **Stripe's North Star:** Stripe measures "PRs created without human code." We take that one step further: **PRs created that solve specific customer pain.** That is the trifecta: Velocity (PRs), Quality (No human code), and Value (Customer Pain Solved).
 
@@ -95,7 +96,13 @@ And lastly, it can be packaged as a Plugin so an org can install it, or it can b
 - **Retro** — Retro items → spec → implementation.
 - **API / contract** — OpenAPI, contract change → client code, adapter, tests.
 
-**Why that matters:** Enterprise doesn’t want a different tool for customer feedback, security, postmortems, and design. They want one orchestration layer that runs the same disciplined flow for each. “We use Cursor for customer-signal-to-code *and* incident-to-fix *and* audit-to-remediation” is a stickier story than “we use Cursor for customer signal.” We chose customer pain for the POC because it’s the highest-friction handoff; the same method applies to the rest of the lifecycle.
+**Why that matters:** Enterprise doesn’t want a different tool for customer feedback, security, postmortems, and design. They want one orchestration layer that runs the same disciplined flow for each.
+
+**Stickiness (The Strategic View):**
+*   **For the Customer:** This is **Consolidation**. They don't want disparate tools for feedback, incidents, and code. They want one orchestration layer.
+*   **For Cursor:** By embedding into the **Signal** layer—the very start of the lifecycle—we become the operating system for R&D, not just an editor. It's not just where code is written; it's where the decision *to* write code happens. That makes the platform indispensable.
+
+We chose customer pain for the POC because it’s the highest-friction handoff; the same method applies to the rest of the lifecycle.
 
 ---
 

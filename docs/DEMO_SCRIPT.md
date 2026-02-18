@@ -57,6 +57,36 @@ Make this explicit when you walk through the spec and the build: point to the **
 - **Scale and context:** Very long transcripts or huge ticket lists could exceed context. We keep signal volume small in the prototype and have the agent produce a **per-source summary** before the cross-source table (summarize then triangulate). Evolution: see “Scaling signal (future work)” below.
 - **Human review:** Spec and code are AI-generated; human still approves the plan and reviews the PR. Evolution: add PR review rules (e.g. security, architecture) and optional “draft PR” automation; keep human in the loop for scope and customer impact.
 - **More of the lifecycle:** We added Verify (product server), PR description, and Linear. Evolution: wire GitHub MCP for real PR creation; add a “post-merge” step (e.g. notify AE, update CRM) when the team’s process requires it.
+- **PII in signal data:** MCP responses (Gong transcripts, Canny voters, Zendesk tickets) contain PII and reach the engineer’s Cursor session. See “PII and security of signal data” below for access control, redaction, and compliance talking points.
+
+### PII and security of signal data (Q&A / enterprise)
+
+**The concern:** When the agent queries Gong, Canny, and Zendesk via MCP, the responses include **PII and sensitive business data**: participant names and emails, company names, call transcripts, ticket text, and voter/requester details. That data flows into the Cursor session and is visible to the engineer running the command. So we’re exposing customer/prospect data to the developer’s context — which is exactly what “traceability” requires, but it raises security and compliance questions.
+
+**What the project doesn’t do today:** We don’t redact PII, we don’t restrict who can run the signal commands, and we don’t define where Cursor stores or indexes MCP response data. The demo uses mocks; with real APIs, credentials and data handling become the customer’s responsibility.
+
+**Does Cursor see your prompts? Is there exposure beyond the engineer or PM?**
+
+Yes — potentially. The concern isn’t only “PII is visible to the person in the session.” Enterprises will ask:
+
+- **Does Cursor (the company) see prompts and completions?** Chat content, including what the user types and what the agent returns (and thus any MCP response data that the agent includes in its replies), may be sent to Cursor’s infrastructure to run the model. Whether Cursor stores that, logs it, or uses it for product improvement or training is defined in **Cursor’s privacy policy and terms** — not in this repo. We don’t speak for Cursor; point customers to Cursor’s official data and privacy documentation.
+- **Model providers:** If Cursor routes requests to third-party models (e.g. OpenAI, Anthropic), then prompts and context (including MCP output that’s in the conversation) may be processed by those providers under their and Cursor’s policies. Enterprises should confirm with Cursor: where does the request go, is there a BAA/DPA, and do they offer on-prem or private-model options for sensitive workloads?
+- **Exposure beyond the engineer/PM:** So the full chain can be: (1) data visible in the session to the user, (2) data sent to Cursor’s servers to run the agent, (3) data possibly sent to or processed by model providers, (4) possible logging or retention by Cursor or the provider. “Only the engineer sees it” is the minimum; in practice, “who else sees it?” is a question for Cursor and for the customer’s DPA/security review.
+
+**What to say:** “Cursor’s privacy policy and terms define whether they see your prompts, how long they’re retained, and whether they’re used for training or product improvement. For MCP data specifically — Gong transcripts, ticket text — that content can end up in the conversation, so it’s subject to the same data flow as the rest of the chat. We recommend enterprises get this in writing: DPA, SOC 2, or a clear statement from Cursor on no training on customer data and where data is processed. This prototype doesn’t change Cursor’s data practices; it just means the *content* flowing through the session can include sensitive customer signal.”
+
+**Talking points for “how do we keep it secure?”**
+
+| Control | What to say |
+|--------|-------------|
+| **Access control** | Restrict who can run `/signal-to-spec` or `/signal-triangulate` (and who has the Gong/Canny/Zendesk MCPs connected). In practice that means: only engineers (or PMs/AEs) with a need-to-know for customer feedback should have those MCPs enabled; use Cursor teams/workspace settings or SSO so the same people who already access Gong/Zendesk in the browser are the ones whose Cursor can call them. “Same principle as today — not everyone has Gong access; the pipeline doesn’t change that, it just moves the access into Cursor.” |
+| **Credentials** | API keys and OAuth for Gong, Canny, Zendesk must live in env vars or a secrets manager, never in chat or in the repo. MCP servers should be configured to use those credentials; the agent never sees the raw secret. |
+| **Minimize what’s persisted** | Specs and PRs should carry only what’s needed for traceability: e.g. company name and role (“VP at Acme”), not necessarily full transcripts or raw emails. Customer quotes can be summarized or anonymized when the spec is shared outside a need-to-know circle. “We want traceability for prioritization; we don’t have to paste the whole transcript into the PR.” |
+| **Proxy / redaction layer** | For stricter compliance, an enterprise could put a **proxy MCP** (or middleware) in front of Gong/Canny/Zendesk that redacts or tokenizes PII (e.g. replace names with “Customer A”, emails with hashes) before responses reach the agent. Triangulation and prioritization still work; traceability becomes “Customer A (Enterprise)” instead of “Jane Smith, jane@acmecorp.com.” Tradeoff: you lose direct attribution in the spec unless you rehydrate server-side. |
+| **Cursor product** | **Does Cursor see your prompts?** Yes, in the sense that chat content (including MCP response data in the thread) is sent to Cursor to run the agent; it may also be processed by model providers. Whether Cursor stores it, uses it for training, or shares it is in Cursor’s privacy policy and terms. Exposure isn’t limited to “only the engineer sees it” — get the full data flow in writing (DPA, SOC 2, no-training commitments). See the “Does Cursor see your prompts?” paragraph above. |
+| **Compliance** | Transcripts and tickets are **personal data** (GDPR, etc.). Enterprises need a lawful basis to process them and to feed them into an AI-assisted workflow. That’s unchanged by MCP — they already have that data in Gong/Zendesk. The new part is “now it’s also in the developer’s Cursor context”; so access control, retention, and minimum necessary exposure (e.g. per-source summary instead of full dump) all matter. |
+
+**One line for the demo:** “MCPs do expose PII to the engineer’s session — names, companies, quotes. We keep it secure the same way we do today: access control (only people who already have Gong/Zendesk access), credentials in env, and we don’t persist more than we need. For stricter environments, a redaction proxy in front of the MCPs is the next step.”
 
 ### Scaling signal (future work)
 
@@ -591,6 +621,7 @@ Mock data is aligned: **Acme Corp** and **CSV export** appear in Gong, Canny, an
 
 | Command | What it does |
 |---------|-------------|
+| `/signal-triangulate` | Ingest + triangulate only (prioritization, no spec). Use for quick prioritization or step-by-step demo. |
 | `/signal-to-spec` | Steps 1–3: ingest from Gong/Canny/Zendesk, triangulate, write spec |
 | `/spec-to-linear` | Create a Linear issue from an existing spec |
 | `/do-linear-ticket` | Fetch a Linear issue, find the spec, plan + implement |
@@ -608,7 +639,7 @@ Everything in this prototype — rules, commands, hooks, and MCP configs — is 
 signal-to-code/
 ├── .cursor-plugin/plugin.json   # Plugin manifest
 ├── .cursor/rules/               # 8 rules (architecture, security, spec template...)
-├── .cursor/commands/            # 6 commands (/signal-to-spec, /review-pr...)
+├── .cursor/commands/            # 7 commands (/signal-triangulate, /signal-to-spec, /review-pr...)
 ├── .cursor/hooks.json           # 2 hooks (auto-test, security scan)
 ├── .cursor/mcp.json             # 6 MCP servers (Gong, Canny mock+live, Zendesk, Product, Linear)
 └── mcp-servers/                 # Mock server implementations
@@ -623,7 +654,7 @@ signal-to-code/
 | Primitive | Count | What it does |
 |-----------|-------|-------------|
 | **Rules** | 8 | Define what to enforce (architecture, security, spec format, domain language) |
-| **Commands** | 6 | Define how to run workflows (signal-to-spec, review-pr, open-pr...) |
+| **Commands** | 7 | Define how to run workflows (signal-triangulate, signal-to-spec, review-pr, open-pr...) |
 | **MCPs** | 6 | Connect to external systems (Gong, Canny mock, Canny live, Zendesk, Product Server, Linear) |
 | **Hooks** | 2 | Enforce quality gates automatically (auto-test on stop, security scan on edit) |
 | **Plugin** | 1 | Package and distribute all of the above to every developer on the team |

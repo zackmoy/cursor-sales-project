@@ -2,6 +2,8 @@
 
 Do the following in order. Use our rules (signal-analysis, spec-template) when they apply.
 
+*If the user only wants prioritization (no spec), they can run **`/signal-triangulate`** instead — ingest + triangulate only.*
+
 ---
 
 ## Signal window (configurable)
