@@ -22,7 +22,7 @@ Use this after you've implemented a feature (e.g. via `/do-linear-ticket`) and w
 ## 3. Push and create PR
 
 - **Push:** `git push -u origin <current-branch>`.
-- **PR body:** Build the body so reviewers get context and a clear QA path. When a spec exists in `specs/` for this feature (e.g. `specs/csv-bulk-export.md`), use it to fill the summary and QA checklist (problem statement, requirements, acceptance criteria). Use `gh pr create --body-file -` with a body file, or `gh pr create` and then `gh pr edit` with the body, or instruct the user to paste the sections below into the GitHub PR description. Include:
+- **PR body:** Build the body so reviewers get context and a clear QA path. When a spec exists in `specs/` for this feature (e.g. `specs/csv-bulk-export.md`), use it to fill the summary and QA checklist (problem statement, requirements, acceptance criteria). **Do not create or commit a PR body file in the repo.** Generate the body content (e.g. in a heredoc or as a string) and pipe it to `gh pr create` so the body is sent directly: e.g. `gh pr create --title "..." --body-file -` with the body fed on stdin (e.g. `printf '%s' "$BODY" | gh pr create --title "..." --body-file -` or a heredoc). If piping is awkward in the environment, use `gh pr create` and then `gh pr edit <number> --body "..."` or instruct the user to paste the sections below into the GitHub PR description. Include:
 
   **Summary / implementation**
   - **Outcome line** (when you have context from spec or issue): e.g. `Outcome: [feature] for [customer/source] from Gong/Canny/Zendesk.`
