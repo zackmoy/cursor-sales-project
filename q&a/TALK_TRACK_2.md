@@ -1,35 +1,28 @@
 # Talk track: Signal-to-Code
 
-## 1. Opener (30–60 sec)
+## 1. Opener, problem, and why it matters (~3 min total)
 
-**Real-world software development isn’t just writing code — it’s responding to customer feedback.** 
-Since getting this project, I reached out to my contacts. And I've spoken to engineers and product leaders at companies like NVIDIA, Netflix, Adobe, and Doximity.
-At the same time, I've been interviewing at half a dozen places and they've all discussed how the're thinking about AI-assisted development.
-
-And the theme is consistent: as AI makes building things easier, the bottleneck shifts from "who's gonna build this" to "what do we build and when do we release it?"
-
-The hardest problem is now around figuring out what to build and making sure it's the right exact solution.
-
-And it's my belief that what we need as product builders, the feedback about our products and its capabilities, is already in our pockets. It's scattered in Zendesk tickets, it's laid across all the votes in Canny or ProductBoard. It's repeated over and over again in my call transcripts in Gong.
-
-But right now those live in different sytems. By the time a developer sees a JIRA ticket, the customer's wods have been translated and the evidence is gone.
-
-So my prototype today pulls all that signal into one place, transforms it to a spec,
-
-**We built a prototype that pulls that signal into one place and turns it into a spec and code with full attribution.** Same workflow you already have — ingest, triangulate, spec, build, verify, PR — but the handoff from “what the customer said” to “what we shipped” happens inside Cursor, with traceability all the way back.
-
-**Quotes:**
-> Too often I find PMs not talking to customers and the same pain points surface multiple times. And those pain points get gated by product. Despite engineering wanting to resolve them. 
+**Use slides:** Intro (you) → *optional: dashboard* → **Slide: “Real-world software development isn’t just writing code — it’s responding to customer feedback.”** → **Slide: The Problem / Success Metric Gap**. Then transition to “What we built” (flow slide).
 
 ---
 
-## 2. Problem and why it matters (1–2 min)
+**Opener (30–45 sec)**  
+Since getting this project, I’ve been talking to engineers and product leaders at places like NVIDIA, Netflix, Adobe, and Doximity. And over the last few weeks, I've been interviewing at several companies. The theme is the same: as AI makes building easier, the bottleneck shifts from “who’s gonna build this” to “what do we build and when do we release it?” The hardest problem is figuring out what to build and making sure it’s the right solution. The feedback we need is already there — in Gong calls, Canny votes, Zendesk tickets — but it’s scattered. So I’m going to walk you through the problem, why it matters, and then what I built to fix it.
 
-**The problem for Customers:** Enterprise teams lose customer signal. A feature request shows up as words on a Gong call, a vote on Canny, and a pattern in Zendesk — but those live in separate tools. Prioritization becomes guesswork.
+**Problem — two sides (1–1.5 min)**  
+*[Slide: The Problem]*
 
-**The problem for Engineering Leaders (NVIDIA, Adobe, Stripe, Netflix):** "Lines of Code" is a vanity metric. "AI Acceptance Rate" is interesting but doesn't measure value. Leaders need a metric that matters.
+**For customers:** Signal is scattered — Gong, Canny, Zendesk. By the time it becomes a Jira ticket, the customer’s words have been translated and the evidence is gone. We ship features but lose the “why.”
 
-**Stripe's North Star:** Stripe measures "PRs created without human code." We take that one step further: **PRs created that solve specific customer pain.** That is the trifecta: Velocity (PRs), Quality (No human code), and Value (Customer Pain Solved).
+**For engineering leaders** (NVIDIA, Adobe, Stripe, Netflix): “Lines of code” is a vanity metric. “AI acceptance rate” doesn’t measure value. The real metric is **PRs merged that solve specific customer pain** — velocity, quality, and traceable value.
+
+**Why it matters (30–45 sec)**  
+Without connecting signal to code, we either build the wrong thing or build the right thing and can’t show why it mattered. One leader said: too often PMs aren’t talking to customers, the same pain points surface again and again, and those pains get gated by product even when engineering wants to fix them. The goal is **to connect the signal — the pain — to the PR — the solution — with full traceability.** That’s what we built. Next I’ll show you the flow.
+
+**Quotes (use if time):**  
+> Too often I find PMs not talking to customers and the same pain points surface multiple times. And those pain points get gated by product. Despite engineering wanting to resolve them.
+
+**Stripe (optional one line):** Stripe’s north star is “PRs without human code.” We add: PRs that solve specific customer pain. Same playbook — velocity, quality, and now traceable value.
 
 ---
 
@@ -142,8 +135,8 @@ Stripe’s internal coding agent uses **PRs produced without human code** as the
 
 ## Quick reference: one-liners
 
-- **Opener:** “Real-world dev is responding to customer feedback. We pull that feedback from Gong, Canny, and Zendesk into one place and turn it into a spec and code with full attribution.”
-- **Problem:** “Signal lives in three systems; by the time it’s a Jira ticket the evidence is gone. We fix that.”
+- **Opener + problem (3 min):** “Real-world dev is responding to customer feedback. We pull that feedback from Gong, Canny, and Zendesk into one place and turn it into a spec and code with full attribution.”
+- **Problem (one line):** “Signal lives in three systems; by the time it’s a Jira ticket the evidence is gone. We fix that.”
 - **Flow:** “Ingest → triangulate by role and customer value → spec → build → verify → PR. One session.”
 - **ROI:** “This feature exists because we turned this customer’s pain into this spec and this code. Here’s the quote; here’s the code.”
 - **Prioritization:** “We don’t just count votes — we weight by who said it, whether they’re an existing customer, and deal potential.”
