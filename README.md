@@ -1,5 +1,7 @@
 # cursor-sales-project
 
+<!-- Test commit for open-pr command flow -->
+
 This repo is set up for **agentic development** with Cursor: the AI agent gets consistent context and behavior so changes are predictable and reviewable. It also contains the **Signal-to-Code demo**: a minimal mock product (Vite + React UI, Express API) that the agent extends (e.g. CSV export) from customer signal.
 
 ## Demo app (Signal-to-Code)
