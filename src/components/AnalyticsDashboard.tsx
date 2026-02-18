@@ -157,10 +157,18 @@ function BarChart({
 // Main component
 // ---------------------------------------------------------------------------
 
+function isDateRangeValid(start: string, end: string): boolean {
+  const startTime = Date.parse(start);
+  const endTime = Date.parse(end);
+  if (Number.isNaN(startTime) || Number.isNaN(endTime)) return false;
+  return startTime <= endTime;
+}
+
 export function AnalyticsDashboard() {
   const [startDate, setStartDate] = useState("2026-02-01");
   const [endDate, setEndDate] = useState("2026-02-15");
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [result, setResult] = useState<QueryResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -168,6 +176,8 @@ export function AnalyticsDashboard() {
     () => AVAILABLE_METRICS.map((m) => m.key),
     [],
   );
+
+  const canExport = isDateRangeValid(startDate, endDate) && selectedMetrics.length >= 1;
 
   async function fetchData() {
     setLoading(true);
@@ -194,6 +204,45 @@ export function AnalyticsDashboard() {
       setError(e instanceof Error ? e.message : "Request failed");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleExportCsv() {
+    if (!canExport) return;
+    setExporting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          startDate,
+          endDate,
+          metrics: selectedMetrics,
+          workspaceId: DEFAULT_WORKSPACE,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(
+          (err as { error?: { message?: string } })?.error?.message ?? `Export failed: ${res.status}`,
+        );
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition");
+      const filenameMatch = disposition?.match(/filename="?([^";\n]+)"?/);
+      const filename =
+        filenameMatch?.[1]?.trim() ?? `analytics-${startDate}-to-${endDate}.csv`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -263,6 +312,19 @@ export function AnalyticsDashboard() {
             }}
           >
             {loading ? "Loading\u2026" : "Run Query"}
+          </button>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={!canExport || exporting}
+            style={{
+              ...styles.button,
+              ...styles.buttonSecondary,
+              opacity: !canExport || exporting ? 0.6 : 1,
+              cursor: !canExport || exporting ? "not-allowed" : "pointer",
+            }}
+          >
+            {exporting ? "Exporting\u2026" : "Export CSV"}
           </button>
         </div>
       </header>
@@ -401,6 +463,11 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     letterSpacing: 0.2,
     boxShadow: "var(--shadow-sm)",
+  },
+  buttonSecondary: {
+    background: "var(--color-surface)",
+    color: "var(--color-text)",
+    border: "1px solid var(--color-border)",
   },
 
   // Error
