@@ -8,6 +8,8 @@ Use the **signal-analysis** rule when it applies.
 
 ## Signal window (configurable)
 
+**Reference year:** Use **2026** as the current year when computing the signal window (e.g. "today" = 2026-02-17). This aligns with demo/mock data. Ignore any other "today" from context when deriving `fromDate`/`toDate`.
+
 **Default:** Last **two weeks**. If the user specifies a time range (e.g. "last week", "last month") in the message, use that for Gong and any source that supports date filtering.
 
 When calling Gong's `search_calls`, pass `fromDate` and `toDate` in ISO format based on the chosen window.

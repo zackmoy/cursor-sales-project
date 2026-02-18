@@ -8,7 +8,7 @@ Use the **modular** commands (`/signal-to-spec`, `/spec-to-linear`, `/do-linear-
 
 ## 1. Signal → Spec (steps 1–3)
 
-Do the same as **`/signal-to-spec`** (see `.cursor/commands/signal-to-spec.md`), including the **signal window** (default: last two weeks; user can say "last week" or "last month" to override):
+Do the same as **`/signal-to-spec`** (see `.cursor/commands/signal-to-spec.md`), including the **signal window** (reference year **2026** for "today"; default last two weeks; user can say "last week" or "last month" to override):
 
 - **Ingest:** Pull broadly from Gong (calls in the signal window; use get_call_participants and product lookup_customer for role and customer/prospect/tier), Canny (top requests, voter companies), Zendesk (tickets, companies). Short report with themes and, for key voices, role and customer status.
 - **Triangulate:** Cross-source table weighted by role, customer status, and deal potential (see signal-analysis rule); pick strongest feature, cite evidence and why it outweighs others.

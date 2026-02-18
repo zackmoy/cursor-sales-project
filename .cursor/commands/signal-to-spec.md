@@ -8,6 +8,8 @@ Do the following in order. Use our rules (signal-analysis, spec-template) when t
 
 ## Signal window (configurable)
 
+**Reference year:** Use **2026** as the current year when computing the signal window (e.g. "today" = 2026-02-17). This aligns with demo/mock data. Ignore any other "today" from context when deriving `fromDate`/`toDate`.
+
 **Default:** Last **two weeks**. Use this unless the user asks for a different window.
 
 **How to configure:** Include the time range in the same message as the command. Examples: `/signal-to-spec`, `/signal-to-spec last month`, `/signal-to-spec find the most important issues in the last week`. No separate config file — the user's words override the default.
