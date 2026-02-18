@@ -53,7 +53,7 @@ And lastly, it can be packaged as a Plugin so an org can install it, or it can b
 
 **Speed is dangerous if you break the architecture.** The prompt asks for "code quality, safety, and consistency." We don't just ship code; we enforce standards.
 
-**The second run:** Watch what happens when I ask for "Dashboard Customization." The agent detects this requires saving user preferences—a new persistence layer. Our `architecture-check` rule catches this *before* a single line of code is written and flags it for review. It stops and asks: "Do you want to introduce state?"
+**The second run:** Watch what happens when I ask for "Azure SSO." The agent detects this requires a security review and architure review. Our `architecture-check` rule catches this *before* a single line of code is written and flags it for review. It even will say "Implementation is blocked... per the Architecture Review section.
 
 **Invisible guardrails (Hooks):** I didn't run the tests or the security scan manually. **Hooks** did that automatically. `afterFileEdit` scans every route for security risks; `stop` runs tests and auto-heals if they fail. It's velocity *with* guardrails.
 
