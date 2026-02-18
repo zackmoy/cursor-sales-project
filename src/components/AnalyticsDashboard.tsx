@@ -157,17 +157,29 @@ function BarChart({
 // Main component
 // ---------------------------------------------------------------------------
 
+function isDateRangeValid(start: string, end: string): boolean {
+  const s = /^\d{4}-\d{2}-\d{2}$/.test(start) ? new Date(start) : null;
+  const e = /^\d{4}-\d{2}-\d{2}$/.test(end) ? new Date(end) : null;
+  if (!s || !e || isNaN(s.getTime()) || isNaN(e.getTime())) return false;
+  return s.getTime() <= e.getTime();
+}
+
 export function AnalyticsDashboard() {
   const [startDate, setStartDate] = useState("2026-02-01");
   const [endDate, setEndDate] = useState("2026-02-15");
   const [loading, setLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
   const [result, setResult] = useState<QueryResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const selectedMetrics = useMemo(
     () => AVAILABLE_METRICS.map((m) => m.key),
     [],
   );
+
+  const exportEnabled =
+    selectedMetrics.length > 0 && isDateRangeValid(startDate, endDate);
 
   async function fetchData() {
     setLoading(true);
@@ -194,6 +206,43 @@ export function AnalyticsDashboard() {
       setError(e instanceof Error ? e.message : "Request failed");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleExport() {
+    setExportError(null);
+    setExportLoading(true);
+    try {
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workspaceId: DEFAULT_WORKSPACE,
+          from: startDate,
+          to: endDate,
+          metrics: selectedMetrics,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(
+          (err as { error?: string })?.error ?? `Export failed: ${res.status}`,
+        );
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition");
+      const match = disposition?.match(/filename="?([^";\n]+)"?/);
+      const filename = match?.[1] ?? `export-${startDate}-${endDate}.csv`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExportLoading(false);
     }
   }
 
@@ -264,11 +313,26 @@ export function AnalyticsDashboard() {
           >
             {loading ? "Loading\u2026" : "Run Query"}
           </button>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={!exportEnabled || exportLoading}
+            style={{
+              ...styles.button,
+              opacity: !exportEnabled || exportLoading ? 0.6 : 1,
+              cursor: !exportEnabled || exportLoading ? "not-allowed" : "pointer",
+            }}
+          >
+            {exportLoading ? "Exporting\u2026" : "Export CSV"}
+          </button>
         </div>
       </header>
 
       {/* Error */}
       {error && <div style={styles.errorBanner}>{error}</div>}
+      {exportError && (
+        <div style={styles.errorBanner}>Export failed: {exportError}</div>
+      )}
 
       {/* Metric cards */}
       {result && (
