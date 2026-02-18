@@ -84,6 +84,9 @@ const GongCallTranscriptSchema = z.object({
 
 // ---------------------------------------------------------------------------
 // Mock data — shaped to match Gong API v2 response format
+// Gong GET /v2/calls uses fromDateTime/toDateTime (ISO with timezone); we filter
+// on call.started the same way. Demo default: year 2026 so "last two weeks"
+// from Feb 2026 includes these calls.
 // ---------------------------------------------------------------------------
 
 /** @type {z.infer<typeof GongCallSchema>[]} */
@@ -301,6 +304,7 @@ server.tool(
     keywords: z.array(z.string()).optional().describe("Topic keywords to filter by"),
   },
   async ({ fromDate, toDate, keywords }) => {
+    // Gong uses fromDateTime/toDateTime; we accept fromDate/toDate (ISO) and filter on call.started
     let results = [...MOCK_CALLS];
 
     if (fromDate) {
