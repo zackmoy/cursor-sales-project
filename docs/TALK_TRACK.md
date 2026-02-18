@@ -2,11 +2,19 @@
 
 ## 1. Opener (30–60 sec)
 
-**Real-world software development isn’t just writing code — it’s responding to customer feedback.** I've spoken to leaders at NVIDIA, Netflix, Adobe, and Doximity this week, and the theme is consistent: As AI makes code abundant, the bottleneck shifts from "engineering hours" to "sequencing and release." The hardest problem becomes deciding *what* to build.
+**Real-world software development isn’t just writing code — it’s responding to customer feedback.** 
+Since getting this project, I reached out to my contacts. And I've spoken to engineers and product leaders at companies like NVIDIA, Netflix, Adobe, and Doximity.
+At the same time, I've been interviewing at half a dozen places and they've all discussed how the're thinking about AI-assisted development.
 
-(Doximity, NVIDIA, Netflix, Financial Services, Motion, Adobe, Telecom, etc)
+And the theme is consistent: as AI makes building things easier, the bottleneck shifts from "who's gonna build this" to "what do we build and when do we release it?"
 
-That feedback is already there: in Zendesk tickets, in Canny votes, on Gong calls. But it lives in three different systems. By the time a developer sees a Jira ticket, the customer’s words have been translated three times and the evidence is gone.
+The hardest problem is now around figuring out what to build and making sure it's the right exact solution.
+
+And it's my belief that what we need as product builders, the feedback about our products and its capabilities, is already in our pockets. It's scattered in Zendesk tickets, it's laid across all the votes in Canny or ProductBoard. It's repeated over and over again in my call transcripts in Gong.
+
+But right now those live in different sytems. By the time a developer sees a JIRA ticket, the customer's wods have been translated and the evidence is gone.
+
+So my prototype today pulls all that signal into one place, transforms it to a spec,
 
 **We built a prototype that pulls that signal into one place and turns it into a spec and code with full attribution.** Same workflow you already have — ingest, triangulate, spec, build, verify, PR — but the handoff from “what the customer said” to “what we shipped” happens inside Cursor, with traceability all the way back.
 
